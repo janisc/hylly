@@ -503,5 +503,6 @@ def test_a_shop_list_goes_to_and_from_the_server_through_ssh_s_own_streams(on_an
         assert str(refused.value).endswith("Nothing was run.")
     with pytest.raises(SystemExit) as refused:  # quoted as it is to be typed
         cli.main(["humble", "list", "--title", "Lantern Wolf"])
-    assert "hylly humble list --title 'Lantern Wolf' - > humble-list.csv writes it here" in str(refused.value)
+    title = '"Lantern Wolf"' if paths.WINDOWS else "'Lantern Wolf'"  # PowerShell's quotes, or a POSIX shell's
+    assert f"hylly humble list --title {title} - > humble-list.csv writes it here" in str(refused.value)
     capsys.readouterr()

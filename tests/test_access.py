@@ -899,11 +899,13 @@ def test_access_log(library):
     lines = access.access_log_file().read_text(encoding="utf-8").splitlines()
     assert len(lines) == 4
     combined = re.compile(r'^127\.0\.0\.1 - (\S+) \[\d\d/\w{3}/\d{4}:\d\d:\d\d:\d\d [+-]\d{4}\] "([^"]*)" (\d{3}) (\S+) "[^"]*" "([^"]*)"$')
-    found = combined.match(lines[0])
-    assert found and found.groups()[:3] == ("reader", "GET /opds/search?q=novel HTTP/1.1", "200") and found[5] == "KOReader/2026.07"
-    assert combined.match(lines[1]).group(1, 3) == ("-", "401")
-    assert combined.match(lines[2]).group(1, 3) == ("(an_unknown_name_of_5_characters)", "401")
-    assert combined.match(lines[3]).group(1, 3) == ("reader", "401")
+    parsed = [combined.match(line) for line in lines]
+    assert all(parsed), lines
+    # each line is written as its answer goes, by the thread that gave it: in the order they ended, not always as asked
+    (found,) = [p for p in parsed if p[3] == "200"]
+    assert found.groups()[:3] == ("reader", "GET /opds/search?q=novel HTTP/1.1", "200") and found[5] == "KOReader/2026.07"
+    assert sorted(p.group(1, 3) for p in parsed if p[3] != "200") == [
+        ("(an_unknown_name_of_5_characters)", "401"), ("-", "401"), ("reader", "401")]
 
 
 def test_a_name_that_isnt_a_users_never_reaches_a_log(library, capsys):
