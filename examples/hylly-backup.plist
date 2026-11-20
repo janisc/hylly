@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- A backup on another disk every night on macOS, at 04:30, or as the Mac wakes if it slept then: hylly backup, to
+     target under [backup] in the settings. The help tells more ("A backup on another disk", "On a timer").
+
+     Make the first backup to the disk by hand, at a terminal, before this: with nobody to answer its question, as here,
+     it stops with exit code 8, copies nothing and sends a note. It runs only while you're logged in (a LaunchAgent).
+     Run it on the computer that has the library: on one that reaches the server over ssh ([remote] ssh), the fresh
+     copy of the records is asked for over ssh with no ssh-agent of yours, so a key with a passphrase can't be used,
+     and the zip gets the server's older copy.
+
+     In a copy of your own, put in your user for "someone" and where the hylly command is (uv tool dir with its bin
+     option says). Then, as yourself, not root:
+       mkdir -p ~/Library/LaunchAgents ~/Library/Logs
+       cp hylly-backup.plist ~/Library/LaunchAgents/io.github.janisc.hylly-backup.plist
+       launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/io.github.janisc.hylly-backup.plist
+     What it said is in ~/Library/Logs/hylly-backup.log. macOS may ask once whether Python may reach the backup's disk.
+     To take it away: launchctl bootout gui/$(id -u)/io.github.janisc.hylly-backup, and remove the file. -->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>io.github.janisc.hylly-backup</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Users/someone/.local/bin/hylly</string>
+		<string>backup</string>
+	</array>
+	<key>StartCalendarInterval</key>
+	<dict>
+		<key>Hour</key>
+		<integer>4</integer>
+		<key>Minute</key>
+		<integer>30</integer>
+	</dict>
+	<key>LowPriorityIO</key>
+	<true/>
+	<key>Nice</key>
+	<integer>10</integer>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PYTHONUNBUFFERED</key>
+		<string>1</string>
+	</dict>
+	<key>StandardOutPath</key>
+	<string>/Users/someone/Library/Logs/hylly-backup.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/someone/Library/Logs/hylly-backup.log</string>
+</dict>
+</plist>

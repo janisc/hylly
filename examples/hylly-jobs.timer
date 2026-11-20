@@ -1,0 +1,13 @@
+# Starts hylly-jobs.service every minute: the library server's periodic jobs, for jobs = "external" under [server] in
+# the settings. Copy both files, as hylly-jobs.service says. One still running when the next minute comes isn't
+# started twice. That the server itself is down, no job can say: OnFailure= in the server's own service, or a
+# container's health check of /healthz, is the way for that.
+[Unit]
+Description=Hylly library server's periodic jobs, every minute
+
+[Timer]
+OnCalendar=minutely
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target

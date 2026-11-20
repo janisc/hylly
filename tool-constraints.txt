@@ -1,0 +1,17 @@
+# The versions uv.lock names, for the hylly command: uv tool install takes no lock, and without these it would take the
+# newest of each library above pyproject.toml's floors, which nobody has tested or audited. uv sync takes the lock itself.
+# uv tool install --editable . --overrides tool-overrides.txt --constraints tool-constraints.txt
+# A test keeps this alike with uv.lock (tests/test_pdfworker.py). After uv lock, write it again: the lines of
+#   uv export --frozen --no-hashes --no-dev --no-emit-project --no-annotate --no-header
+# but those for sys_platform == 'never', which tool-overrides.txt leaves out of the install.
+anyio==4.15.1
+certifi==2026.10.23
+h11==0.16.0
+httpcore==1.0.9
+httpx==0.28.1
+idna==3.20
+pillow==13.0.0
+psutil==7.2.2
+pymupdf==2.1
+rarfile==4.5
+typing-extensions==4.16.0 ; python_full_version < '3.15'

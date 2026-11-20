@@ -1,0 +1,103 @@
+# File formats: one table each, by the file's extension.
+#   layout   reflowable (text that flows to fit the screen), fixed (pages as printed) or comic (pages as pictures)
+#   shop     a shop's file in this format is the book itself, not an extra
+#   book     a file in this format in your own folders is a book
+#   keep     hylly set format can choose it as the file to keep (one chosen before stays while the format is here)
+# Which format of a title is downloaded, which of its files Hylly can read is its main one (read for its details and
+# its cover), the book read inside a ZIP package, and where a title is best read, are your settings: [download] and
+# [devices] in settings.toml. Your own rules files can change any of this: see docs/rules.md, or hylly rules.
+
+[formats.epub]
+layout = "reflowable"
+shop = true
+book = true
+keep = true
+
+[formats.mobi]
+layout = "reflowable"
+shop = true
+book = true
+keep = true
+
+[formats.azw3]
+layout = "reflowable"
+shop = true
+book = true
+keep = true
+
+[formats.azw]
+layout = "reflowable"
+shop = true
+book = true
+
+[formats.prc]
+layout = "reflowable"
+shop = true
+book = true
+keep = true
+
+[formats.txt]
+layout = "reflowable"
+shop = true
+
+[formats.fb2]
+layout = "reflowable"
+book = true
+
+[formats.pdf]
+layout = "fixed"
+shop = true
+book = true
+keep = true
+
+[formats.djvu]
+layout = "fixed"
+shop = true
+book = true
+
+[formats.cbz]
+layout = "comic"
+shop = true
+book = true
+keep = true
+
+[formats.cbr]
+layout = "comic"
+shop = true
+book = true
+keep = true
+
+[formats.cb7]
+layout = "comic"
+shop = true
+book = true
+
+[formats.zip]
+# a book in several formats in one ZIP (as StoryBundle sends them), or a comic's pages zipped as they are
+book = true
+
+[packages]
+# The book files looked for inside a ZIP package, in any order: the one read for its details is the first of its
+# kind's formats under [download] in the settings. Read with the ZIP: a change reaches the ZIPs already in the catalog
+# with hylly catalog --rebuild.
+books = ["epub", "azw3", "azw", "mobi", "fb2", "pdf"]
+# Files a ZIP of pictures may hold besides its pages: they don't count against it being pictures.
+ignore = ["txt", "url", "db"]
+
+[media]
+# A shop's file in one of these formats is audio or video, not a book.
+audio = ["mp3", "flac", "m4b", "m4a", "ogg", "wav", "aac", "aax", "opus"]
+video = ["mp4", "mkv", "mov", "avi", "webm", "m4v", "wmv"]
+# Programs (itch.io's games and tools), and the scripts and shortcuts Windows runs or follows: never downloaded, not
+# even when [itchio] fetch names them. Windows' own kinds stay out even if taken off here: Hylly keeps them apart.
+programs = ["exe", "msi", "apk", "dmg", "pkg", "appimage", "deb", "rpm", "x86_64", "jar", "swf", "love", "app",
+            "bat", "cmd", "com", "scr", "lnk", "url", "scf", "ps1", "vbs", "js", "wsf", "hta", "reg"]
+
+[itchio]
+# The kinds of file hylly itchio download takes from an item, by extension: the books' formats above, archives,
+# pictures and plain documents. Any other file is left out, and each run lists what it left out: music, fonts, web
+# pages and virtual-tabletop files among them. To take a kind more, take the # off this line in your copy of this file
+# (hylly rules copy formats), with the kinds you want:
+# fetch_add = ["mp3"]
+fetch = ["epub", "mobi", "azw3", "azw", "prc", "fb2", "txt", "pdf", "djvu", "cbz", "cbr", "cb7", "zip", "rar", "7z",
+         "jpg", "jpeg", "png", "gif", "webp", "md", "rtf", "odt", "docx", "ods", "xlsx"]

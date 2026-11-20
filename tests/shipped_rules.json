@@ -1,0 +1,1214 @@
+{
+ "filename": {
+  "strip": [
+   "(ebook)",
+   "(epub)",
+   "(pdf)"
+  ],
+  "strip_patterns": [],
+  "number_pattern": "",
+  "dots_as_spaces": true
+ },
+ "junk": {
+  "titles": [
+   "untitled",
+   "microsoft word",
+   "title",
+   "unknown"
+  ],
+  "title_patterns": [
+   "^document\\d*\\b",
+   "^test$",
+   "^cover(?:\\s*[-:.]|$)",
+   "\\.pm\\d\\b"
+  ],
+  "title_extensions": [
+   "doc",
+   "docx",
+   "indd",
+   "indb",
+   "qxd",
+   "qxp",
+   "pdf",
+   "rtf",
+   "dvi",
+   "psd",
+   "tex",
+   "p65",
+   "wpd",
+   "odt",
+   "eps",
+   "htm",
+   "html",
+   "ppt",
+   "pptx",
+   "jpg",
+   "jpeg",
+   "png",
+   "tif",
+   "tiff",
+   "xls",
+   "txt"
+  ],
+  "authors": [
+   "administrator",
+   "admin",
+   "user",
+   "owner",
+   "unknown",
+   "author",
+   "calibre",
+   "adobe",
+   "default",
+   "pc"
+  ],
+  "author_patterns": [
+   "^test$"
+  ]
+ },
+ "names": {
+  "name_particles": [
+   "de",
+   "van",
+   "von",
+   "la",
+   "le",
+   "da",
+   "di"
+  ],
+  "particles": [
+   "de",
+   "van",
+   "von",
+   "la",
+   "le",
+   "da",
+   "di",
+   "der",
+   "den",
+   "du",
+   "del",
+   "della",
+   "des",
+   "ten",
+   "ter"
+  ],
+  "not_name_words": [
+   "the",
+   "of",
+   "and",
+   "a",
+   "an",
+   "in",
+   "to",
+   "for",
+   "on",
+   "with",
+   "how",
+   "guide",
+   "book",
+   "vol",
+   "volume",
+   "microsoft",
+   "word",
+   "adobe",
+   "acrobat",
+   "document"
+  ],
+  "suffixes": [
+   "jr",
+   "sr",
+   "ii",
+   "iii",
+   "iv",
+   "phd",
+   "md"
+  ],
+  "company_words": [
+   "inc",
+   "ltd",
+   "llc",
+   "co"
+  ],
+  "author_separators": [
+   ";",
+   "&",
+   " and "
+  ]
+ },
+ "series": {
+  "words": [
+   "vol",
+   "volume",
+   "book",
+   "tome",
+   "issue",
+   "no",
+   "part"
+  ],
+  "bracket_words": [
+   "book"
+  ],
+  "part_words": [
+   "issue",
+   "part",
+   "vol",
+   "volume",
+   "book",
+   "chapter",
+   "episode"
+  ],
+  "fold_words": [
+   "the complete",
+   "the",
+   "complete",
+   "collection"
+  ],
+  "collected_words": [
+   "vol",
+   "vols",
+   "volume",
+   "volumes",
+   "book",
+   "tpb",
+   "hc",
+   "hardcover",
+   "omnibus",
+   "compendium",
+   "graphic novel",
+   "deluxe",
+   "library edition",
+   "collection",
+   "archive",
+   "archives",
+   "treasury"
+  ],
+  "comic_notes": [
+   "digital",
+   "digital edition",
+   "graphic novel"
+  ],
+  "comic_noise": [
+   "tpb",
+   "hc",
+   "hardcover",
+   "the complete",
+   "complete"
+  ]
+ },
+ "kinds": {
+  "prose_max_mb": 8.4,
+  "book": {
+   "label": "Book",
+   "plural": "Books",
+   "device": "ereader",
+   "text_first": true,
+   "itchio": [
+    "book",
+    "other"
+   ]
+  },
+  "tech": {
+   "label": "Tech book",
+   "plural": "Tech books",
+   "device": "either",
+   "why_device": "fine on an e-reader, better on a tablet for code and diagrams",
+   "joins_books": true,
+   "bundle_words": [
+    "tech",
+    "technology",
+    "programming",
+    "coding",
+    "code",
+    "python",
+    "javascript",
+    "typescript",
+    "java",
+    "rust",
+    "golang",
+    "linux",
+    "unix",
+    "devops",
+    "cloud",
+    "aws",
+    "azure",
+    "kubernetes",
+    "docker",
+    "security",
+    "hacking",
+    "hacker",
+    "hackers",
+    "cybersecurity",
+    "cyber",
+    "data science",
+    "machine learning",
+    "deep learning",
+    "ai",
+    "developer",
+    "developers",
+    "web development",
+    "game development",
+    "game dev",
+    "computer science",
+    "computing",
+    "computer",
+    "computers",
+    "networking",
+    "sql",
+    "database",
+    "databases",
+    "algorithm",
+    "algorithms",
+    "raspberry pi",
+    "arduino",
+    "electronics",
+    "maker",
+    "stem",
+    "ui/ux",
+    "o'reilly",
+    "oreilly",
+    "no starch",
+    "packt",
+    "manning",
+    "pragmatic",
+    "apress",
+    "microsoft"
+   ],
+   "publishers": [
+    "o'reilly",
+    "oreilly",
+    "no starch",
+    "packt",
+    "manning",
+    "pragmatic",
+    "apress",
+    "addison-wesley",
+    "microsoft press",
+    "crc press",
+    "mercury learning",
+    "make:",
+    "maker media",
+    "raspberry pi",
+    "sitepoint",
+    "springer",
+    "morgan kaufmann",
+    "sams",
+    "peachpit",
+    "cisco press",
+    "mit press",
+    "bpb"
+   ]
+  },
+  "rpg": {
+   "label": "RPG book",
+   "plural": "RPG books",
+   "device": "tablet",
+   "prose": true,
+   "joins_books": true,
+   "itchio": [
+    "tabletop",
+    "game"
+   ],
+   "bundle_words": [
+    "rpg",
+    "rpgs",
+    "role-playing",
+    "roleplaying",
+    "tabletop",
+    "ttrpg",
+    "ttrpgs",
+    "5e",
+    "d&d",
+    "dungeons",
+    "pathfinder",
+    "starfinder",
+    "battletech",
+    "mechwarrior",
+    "world of darkness",
+    "shadowrun",
+    "call of cthulhu",
+    "savage worlds",
+    "warhammer",
+    "cyberpunk red",
+    "osr"
+   ],
+   "publishers": [
+    "paizo",
+    "catalyst game labs",
+    "chaosium",
+    "evil hat",
+    "modiphius",
+    "free league",
+    "fria ligan",
+    "pelgrane",
+    "onyx path",
+    "white wolf",
+    "green ronin",
+    "kobold press",
+    "monte cook",
+    "cubicle 7",
+    "pinnacle",
+    "steve jackson games",
+    "goodman games",
+    "r. talsorian",
+    "mongoose",
+    "fantasy flight",
+    "wizards of the coast",
+    "renegade game studios",
+    "renegade games",
+    "magpie games",
+    "games workshop",
+    "arc dream",
+    "sine nomine",
+    "necrotic gnome",
+    "frog god",
+    "troll lord",
+    "atlas games",
+    "posthuman studios",
+    "petersen games",
+    "exalted funeral",
+    "the design mechanism"
+   ]
+  },
+  "comic": {
+   "label": "Comic",
+   "plural": "Comics",
+   "device": "tablet",
+   "prose": true,
+   "layout": "comic",
+   "folders": [
+    "comics"
+   ],
+   "itchio": [
+    "comic"
+   ],
+   "bundle_words": [
+    "comic",
+    "comics",
+    "manga",
+    "graphic novel",
+    "graphic novels",
+    "manhwa",
+    "webtoon",
+    "webtoons",
+    "bande dessinée",
+    "bandes dessinées",
+    "bande dessinées",
+    "bandes dessinée"
+   ],
+   "publishers": [
+    "image comics",
+    "dark horse",
+    "idw",
+    "boom! studios",
+    "boom studios",
+    "kodansha",
+    "viz media",
+    "yen press",
+    "seven seas",
+    "titan comics",
+    "dynamite",
+    "oni press",
+    "fantagraphics",
+    "valiant",
+    "archie comics",
+    "humanoids",
+    "vertical",
+    "tokyopop",
+    "udon",
+    "aftershock",
+    "ahoy comics",
+    "mad cave",
+    "scout comics",
+    "vault comics",
+    "top shelf",
+    "drawn & quarterly",
+    "first second",
+    "magnetic press",
+    "lion forge",
+    "zenescope",
+    "action lab",
+    "black mask",
+    "avatar press",
+    "rebellion",
+    "2000 ad",
+    "abrams comicarts",
+    "dc comics",
+    "marvel"
+   ]
+  },
+  "manual": {
+   "label": "Manual",
+   "plural": "Manuals",
+   "device": "ereader",
+   "folders": [
+    "manuals"
+   ]
+  }
+ },
+ "labels": {
+  "extra": [
+   "supplement*",
+   "bonus*",
+   "extra*",
+   "companion*",
+   "sample*",
+   "preview*",
+   "errata*",
+   "wallpaper*",
+   "map",
+   "maps"
+  ],
+  "audio": [
+   "mp3",
+   "flac",
+   "aac",
+   "m4b",
+   "audio",
+   "audiobook"
+  ],
+  "video": [
+   "video",
+   "1080p",
+   "720p",
+   "480p",
+   "4k"
+  ]
+ },
+ "languages": {
+  "german": [
+   "deutsch",
+   "german"
+  ],
+  "french": [
+   "français",
+   "french"
+  ],
+  "spanish": [
+   "español",
+   "spanish"
+  ],
+  "italian": [
+   "italiano",
+   "italian"
+  ],
+  "portuguese": [
+   "português",
+   "portuguese"
+  ],
+  "polish": [
+   "polski",
+   "polish"
+  ],
+  "russian": [
+   "russian"
+  ],
+  "japanese": [
+   "japanese"
+  ],
+  "dutch": [
+   "dutch",
+   "nederlands"
+  ]
+ },
+ "genres": {
+  "titles_unread": [],
+  "Science Fiction": {
+   "words": [
+    "science fiction*",
+    "sciencefiction*",
+    "sci fi*",
+    "scifi*",
+    "sf",
+    "space opera*",
+    "cyberpunk*",
+    "steampunk*",
+    "dystopi*",
+    "time travel*"
+   ]
+  },
+  "Fantasy": {
+   "words": [
+    "fantasy*",
+    "fantasies",
+    "dragons*",
+    "faerie*",
+    "sword*",
+    "wizard*",
+    "witch*"
+   ]
+  },
+  "Horror": {
+   "words": [
+    "horror*",
+    "lovecraft*",
+    "zombie*",
+    "vampire*",
+    "ghost*",
+    "haunt*",
+    "creepy*",
+    "eerie*",
+    "terror*"
+   ]
+  },
+  "Mystery & Thriller": {
+   "words": [
+    "mystery*",
+    "mysteries",
+    "thriller*",
+    "crime*",
+    "detective*",
+    "noir*",
+    "murder*",
+    "suspense*"
+   ]
+  },
+  "Comics & Graphic Novels": {
+   "words": [
+    "comic*",
+    "graphic novel*",
+    "bande dessin*"
+   ]
+  },
+  "Manga": {
+   "words": [
+    "manga*"
+   ]
+  },
+  "Programming": {
+   "words": [
+    "programming*",
+    "software*",
+    "python*",
+    "javascript*",
+    "computer*",
+    "coding*",
+    "linux*",
+    "unix*",
+    "algorithm*",
+    "developer*",
+    "machine learning*",
+    "ai",
+    "data science*"
+   ]
+  },
+  "Game Development & Design": {
+   "words": [
+    "game development*",
+    "game design*",
+    "videogame design*",
+    "game programming*",
+    "game engine*",
+    "game dev*",
+    "level design*",
+    "unity*",
+    "unreal*",
+    "godot*"
+   ]
+  },
+  "Video Games": {
+   "words": [
+    "video game*",
+    "videogame*",
+    "gaming*",
+    "nintendo*",
+    "sega*",
+    "xbox*",
+    "atari*",
+    "playstation*",
+    "arcade*"
+   ]
+  },
+  "Tabletop RPG": {
+   "words": [
+    "rpg",
+    "rpgs",
+    "role playing*",
+    "roleplaying*",
+    "battletech*",
+    "dungeons*",
+    "pathfinder*",
+    "vampire the masquerade*",
+    "tabletop*"
+   ]
+  },
+  "Art & Design": {
+   "words": [
+    "art",
+    "drawing*",
+    "illustration*",
+    "animation*",
+    "graphic design*",
+    "photograph*",
+    "artbook*",
+    "painting*"
+   ]
+  },
+  "History": {
+   "words": [
+    "history*",
+    "histories",
+    "historical*",
+    "viking*",
+    "medieval*",
+    "ancient*",
+    "world war*"
+   ]
+  },
+  "Psychology & Philosophy": {
+   "words": [
+    "psycholog*",
+    "neuropsycholog*",
+    "parapsycholog*",
+    "philosoph*",
+    "mytholog*"
+   ]
+  },
+  "Occult & Religion": {
+   "words": [
+    "occult*",
+    "magic*",
+    "esoteric*",
+    "religio*",
+    "spiritual*",
+    "tarot*",
+    "shaman*",
+    "alchemy*"
+   ]
+  },
+  "Poetry": {
+   "words": [
+    "poetry*",
+    "poems*",
+    "poet*"
+   ]
+  },
+  "Writing": {
+   "words": [
+    "writing",
+    "creative writing*"
+   ],
+   "patterns": [
+    "writers?'? (?:guide|craft|tools)"
+   ]
+  },
+  "Science & Math": {
+   "words": [
+    "physics*",
+    "math*",
+    "chemistry*",
+    "biology*",
+    "astronom*",
+    "engineering*",
+    "electronics*",
+    "stem"
+   ],
+   "patterns": [
+    "science(?!\\s*fiction)"
+   ]
+  },
+  "Business & Self-Help": {
+   "words": [
+    "business*",
+    "self help*",
+    "selfhelp*",
+    "career*",
+    "leadership*",
+    "productivity*",
+    "finance*"
+   ]
+  },
+  "Home, Garden & Outdoors": {
+   "words": [
+    "garden*",
+    "cooking*",
+    "cookbook*",
+    "craft*",
+    "bushcraft*",
+    "handicraft*",
+    "papercraft*",
+    "needlecraft*",
+    "knit*",
+    "crochet*",
+    "survival*",
+    "outdoor*",
+    "homestead*",
+    "hunting*",
+    "fishing*"
+   ]
+  },
+  "Travel": {
+   "words": [
+    "travel*"
+   ]
+  },
+  "Classics": {
+   "words": [
+    "classics",
+    "classic literature*",
+    "literary fiction*"
+   ]
+  },
+  "Young Adult": {
+   "words": [
+    "young adult*",
+    "ya",
+    "juvenile*",
+    "teen",
+    "teens",
+    "teenage"
+   ]
+  },
+  "Romance": {
+   "words": [
+    "romance*",
+    "love story*",
+    "love stories"
+   ]
+  }
+ },
+ "kind_genres": {
+  "comic": {
+   "genre": "Comics & Graphic Novels",
+   "unless": [
+    "Manga"
+   ]
+  },
+  "manual": {
+   "genre": "Game Manuals",
+   "only": true
+  }
+ },
+ "games": {
+  "Call of Cthulhu": {
+   "words": [
+    "call of cthulhu*",
+    "pulp cthulhu*",
+    "cthulhu dark ages*"
+   ]
+  },
+  "Delta Green": {
+   "words": [
+    "delta green*"
+   ]
+  },
+  "Trail of Cthulhu": {
+   "words": [
+    "trail of cthulhu*"
+   ]
+  },
+  "Dungeons & Dragons": {
+   "words": [
+    "dungeons & dragons*",
+    "dungeons&dragons*",
+    "dungeons and dragons*",
+    "dungeonsanddragons*",
+    "d & d",
+    "d&d",
+    "5e",
+    "dnd"
+   ]
+  },
+  "Pathfinder": {
+   "words": [
+    "pathfinder*"
+   ]
+  },
+  "Starfinder": {
+   "words": [
+    "starfinder*"
+   ]
+  },
+  "Vampire: The Masquerade": {
+   "words": [
+    "vampire the masquerade*"
+   ]
+  },
+  "Werewolf: The Apocalypse": {
+   "words": [
+    "werewolf the apocalypse*"
+   ]
+  },
+  "Mage: The Ascension": {
+   "words": [
+    "mage the ascension*"
+   ]
+  },
+  "Hunter: The Reckoning": {
+   "words": [
+    "hunter the reckoning*"
+   ]
+  },
+  "World of Darkness": {
+   "words": [
+    "world of darkness*"
+   ]
+  },
+  "Shadowrun": {
+   "words": [
+    "shadowrun*"
+   ]
+  },
+  "BattleTech": {
+   "words": [
+    "battletech*",
+    "mechwarrior*",
+    "a time of war*"
+   ]
+  },
+  "Paranoia": {
+   "words": [
+    "paranoia"
+   ],
+   "ordinary": true
+  },
+  "Traveller": {
+   "words": [
+    "traveller"
+   ],
+   "ordinary": true
+  },
+  "Cyberpunk": {
+   "words": [
+    "cyberpunk red*",
+    "cyberpunk 2020*",
+    "cyberpunk 2013*"
+   ]
+  },
+  "Warhammer Fantasy Roleplay": {
+   "words": [
+    "warhammer fantasy*",
+    "wfrp"
+   ]
+  },
+  "Warhammer 40,000": {
+   "words": [
+    "warhammer 40*",
+    "wrath & glory*",
+    "wrath and glory*",
+    "dark heresy*",
+    "rogue trader*",
+    "deathwatch*",
+    "only war*"
+   ]
+  },
+  "Star Wars": {
+   "words": [
+    "star wars*"
+   ]
+  },
+  "Star Trek Adventures": {
+   "words": [
+    "star trek*"
+   ]
+  },
+  "Savage Worlds": {
+   "words": [
+    "savage worlds*",
+    "deadlands*"
+   ]
+  },
+  "GURPS": {
+   "words": [
+    "gurps"
+   ]
+  },
+  "Fate": {
+   "words": [
+    "fate core",
+    "fate accelerated",
+    "fate condensed"
+   ]
+  },
+  "Dungeon Crawl Classics": {
+   "words": [
+    "dungeon crawl classics*",
+    "dcc"
+   ]
+  },
+  "Mutant: Year Zero": {
+   "words": [
+    "mutant year zero*"
+   ]
+  },
+  "Alien": {
+   "words": [
+    "alien the roleplaying game*",
+    "alien rpg"
+   ]
+  },
+  "Forbidden Lands": {
+   "words": [
+    "forbidden lands*"
+   ]
+  },
+  "Tales from the Loop": {
+   "words": [
+    "tales from the loop*",
+    "things from the flood*"
+   ]
+  },
+  "Vaesen": {
+   "words": [
+    "vaesen"
+   ]
+  },
+  "Symbaroum": {
+   "words": [
+    "symbaroum*"
+   ]
+  },
+  "Dragonbane": {
+   "words": [
+    "dragonbane*",
+    "drakar och demoner*"
+   ]
+  },
+  "The One Ring": {
+   "words": [
+    "the one ring*"
+   ],
+   "ordinary": true
+  },
+  "Blade Runner": {
+   "words": [
+    "blade runner*"
+   ]
+  },
+  "Twilight: 2000": {
+   "words": [
+    "twilight 2000*",
+    "twilight2000*"
+   ]
+  },
+  "Coriolis": {
+   "words": [
+    "coriolis*"
+   ],
+   "ordinary": true
+  },
+  "13th Age": {
+   "words": [
+    "13th age*"
+   ]
+  },
+  "Numenera": {
+   "words": [
+    "numenera*",
+    "cypher system*"
+   ]
+  },
+  "Mothership": {
+   "words": [
+    "mothership*"
+   ],
+   "ordinary": true
+  },
+  "Mörk Borg": {
+   "words": [
+    "mörk borg*"
+   ]
+  },
+  "Lancer": {
+   "words": [
+    "lancer"
+   ],
+   "ordinary": true
+  },
+  "Legend of the Five Rings": {
+   "words": [
+    "legend of the five rings*",
+    "l5r"
+   ]
+  },
+  "Exalted": {
+   "words": [
+    "exalted"
+   ],
+   "ordinary": true
+  },
+  "Kult": {
+   "words": [
+    "kult"
+   ],
+   "ordinary": true
+  },
+  "Conan": {
+   "words": [
+    "conan"
+   ],
+   "ordinary": true
+  },
+  "Dune": {
+   "words": [
+    "dune"
+   ],
+   "ordinary": true
+  }
+ },
+ "formats": {
+  "epub": {
+   "layout": "reflowable",
+   "shop": true,
+   "book": true,
+   "keep": true
+  },
+  "mobi": {
+   "layout": "reflowable",
+   "shop": true,
+   "book": true,
+   "keep": true
+  },
+  "azw3": {
+   "layout": "reflowable",
+   "shop": true,
+   "book": true,
+   "keep": true
+  },
+  "azw": {
+   "layout": "reflowable",
+   "shop": true,
+   "book": true
+  },
+  "prc": {
+   "layout": "reflowable",
+   "shop": true,
+   "book": true,
+   "keep": true
+  },
+  "txt": {
+   "layout": "reflowable",
+   "shop": true
+  },
+  "fb2": {
+   "layout": "reflowable",
+   "book": true
+  },
+  "pdf": {
+   "layout": "fixed",
+   "shop": true,
+   "book": true,
+   "keep": true
+  },
+  "djvu": {
+   "layout": "fixed",
+   "shop": true,
+   "book": true
+  },
+  "cbz": {
+   "layout": "comic",
+   "shop": true,
+   "book": true,
+   "keep": true
+  },
+  "cbr": {
+   "layout": "comic",
+   "shop": true,
+   "book": true,
+   "keep": true
+  },
+  "cb7": {
+   "layout": "comic",
+   "shop": true,
+   "book": true
+  },
+  "zip": {
+   "book": true
+  }
+ },
+ "packages": {
+  "books": [
+   "epub",
+   "azw3",
+   "azw",
+   "mobi",
+   "fb2",
+   "pdf"
+  ],
+  "ignore": [
+   "txt",
+   "url",
+   "db"
+  ]
+ },
+ "media": {
+  "audio": [
+   "mp3",
+   "flac",
+   "m4b",
+   "m4a",
+   "ogg",
+   "wav",
+   "aac",
+   "aax",
+   "opus"
+  ],
+  "video": [
+   "mp4",
+   "mkv",
+   "mov",
+   "avi",
+   "webm",
+   "m4v",
+   "wmv"
+  ],
+  "programs": [
+   "exe",
+   "msi",
+   "apk",
+   "dmg",
+   "pkg",
+   "appimage",
+   "deb",
+   "rpm",
+   "x86_64",
+   "jar",
+   "swf",
+   "love",
+   "app",
+   "bat",
+   "cmd",
+   "com",
+   "scr",
+   "lnk",
+   "url",
+   "scf",
+   "ps1",
+   "vbs",
+   "js",
+   "wsf",
+   "hta",
+   "reg"
+  ]
+ },
+ "itchio": {
+  "fetch": [
+   "epub",
+   "mobi",
+   "azw3",
+   "azw",
+   "prc",
+   "fb2",
+   "txt",
+   "pdf",
+   "djvu",
+   "cbz",
+   "cbr",
+   "cb7",
+   "zip",
+   "rar",
+   "7z",
+   "jpg",
+   "jpeg",
+   "png",
+   "gif",
+   "webp",
+   "md",
+   "rtf",
+   "odt",
+   "docx",
+   "ods",
+   "xlsx"
+  ]
+ }
+}

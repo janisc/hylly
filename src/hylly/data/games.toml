@@ -1,0 +1,157 @@
+# The games of RPG books, for the Game filter. An RPG title's game is the shop's own (DriveThruRPG's Rule
+# System) when it says, else one of these names in its title, series or bundle; a shop's name for a game that
+# one of these finds is shown as this one ("Pathfinder 2e": Pathfinder). Only RPG titles get a game: a novel
+# set in a game's world is no book of the game.
+#   words     whole words or phrases, case and accents not counting, any spaces or punctuation between a phrase's
+#             words; a * at the end means "starts with"
+#   patterns  regular expressions, for what words can't say
+#   ordinary  the name is an ordinary word too, so it isn't looked for in descriptions ("a dose of paranoia")
+# The first game in this list that a name finds is the one shown; a game of your own comes after these. Widely
+# known games only: your own rules files can add any other, or change any of it (docs/rules.md, or hylly rules).
+
+[games."Call of Cthulhu"]
+words = ["call of cthulhu*", "pulp cthulhu*", "cthulhu dark ages*"]
+
+[games."Delta Green"]
+words = ["delta green*"]
+
+[games."Trail of Cthulhu"]
+words = ["trail of cthulhu*"]
+
+[games."Dungeons & Dragons"]
+words = ["dungeons & dragons*", "dungeons&dragons*", "dungeons and dragons*", "dungeonsanddragons*", "d & d", "d&d",
+         "5e", "dnd"]
+
+[games."Pathfinder"]
+words = ["pathfinder*"]
+
+[games."Starfinder"]
+words = ["starfinder*"]
+
+[games."Vampire: The Masquerade"]
+words = ["vampire the masquerade*"]
+
+[games."Werewolf: The Apocalypse"]
+words = ["werewolf the apocalypse*"]
+
+[games."Mage: The Ascension"]
+words = ["mage the ascension*"]
+
+[games."Hunter: The Reckoning"]
+words = ["hunter the reckoning*"]
+
+[games."World of Darkness"]
+words = ["world of darkness*"]
+
+[games."Shadowrun"]
+words = ["shadowrun*"]
+
+[games."BattleTech"]
+words = ["battletech*", "mechwarrior*", "a time of war*"]
+
+[games."Paranoia"]
+words = ["paranoia"]
+ordinary = true
+
+[games."Traveller"]
+words = ["traveller"]
+ordinary = true
+
+[games."Cyberpunk"]
+words = ["cyberpunk red*", "cyberpunk 2020*", "cyberpunk 2013*"]
+
+[games."Warhammer Fantasy Roleplay"]
+words = ["warhammer fantasy*", "wfrp"]
+
+[games."Warhammer 40,000"]
+words = ["warhammer 40*", "wrath & glory*", "wrath and glory*", "dark heresy*", "rogue trader*", "deathwatch*",
+         "only war*"]
+
+[games."Star Wars"]
+words = ["star wars*"]
+
+[games."Star Trek Adventures"]
+words = ["star trek*"]
+
+[games."Savage Worlds"]
+words = ["savage worlds*", "deadlands*"]
+
+[games."GURPS"]
+words = ["gurps"]
+
+[games."Fate"]
+words = ["fate core", "fate accelerated", "fate condensed"]
+
+[games."Dungeon Crawl Classics"]
+words = ["dungeon crawl classics*", "dcc"]
+
+[games."Mutant: Year Zero"]
+words = ["mutant year zero*"]
+
+[games."Alien"]
+words = ["alien the roleplaying game*", "alien rpg"]
+
+[games."Forbidden Lands"]
+words = ["forbidden lands*"]
+
+[games."Tales from the Loop"]
+words = ["tales from the loop*", "things from the flood*"]
+
+[games."Vaesen"]
+words = ["vaesen"]
+
+[games."Symbaroum"]
+words = ["symbaroum*"]
+
+[games."Dragonbane"]
+words = ["dragonbane*", "drakar och demoner*"]
+
+[games."The One Ring"]
+words = ["the one ring*"]
+ordinary = true
+
+[games."Blade Runner"]
+words = ["blade runner*"]
+
+[games."Twilight: 2000"]
+words = ["twilight 2000*", "twilight2000*"]
+
+[games."Coriolis"]
+words = ["coriolis*"]
+ordinary = true
+
+[games."13th Age"]
+words = ["13th age*"]
+
+[games."Numenera"]
+words = ["numenera*", "cypher system*"]
+
+[games."Mothership"]
+words = ["mothership*"]
+ordinary = true
+
+[games."Mörk Borg"]
+words = ["mörk borg*"]
+
+[games."Lancer"]
+words = ["lancer"]
+ordinary = true
+
+[games."Legend of the Five Rings"]
+words = ["legend of the five rings*", "l5r"]
+
+[games."Exalted"]
+words = ["exalted"]
+ordinary = true
+
+[games."Kult"]
+words = ["kult"]
+ordinary = true
+
+[games."Conan"]
+words = ["conan"]
+ordinary = true
+
+[games."Dune"]
+words = ["dune"]
+ordinary = true

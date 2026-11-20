@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Library database</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cellipse cx='16' cy='7' rx='11' ry='4' fill='%232f5d8a'/%3E%3Cpath d='M5 7v18c0 2.2 4.9 4 11 4s11-1.8 11-4V7' fill='%232f5d8a'/%3E%3C/svg%3E">
+<!-- Served by hylly serve at /database, to the library's owners only, reading only (dbpage.py). The key in double braces
+     is filled in per server start (dashboard.page); the limits it says come with the tables (dbpage.limits). -->
+<script>try {  /* the colours and the theme this browser chose, as the library page does */
+  const t = localStorage.getItem("hylly.theme"), k = localStorage.getItem("hylly.look") || localStorage.getItem("hylly.lookhere");
+  if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+  if (k === "yours") {  /* your own theme: its colours over the theme it was made from (themes.own_theme) */
+    const o = JSON.parse(localStorage.getItem("hylly.own") || "null") || {}, r = document.documentElement;
+    if (/^[a-z][a-z0-9-]{0,39}$/.test(o.base || "")) r.dataset.skin = o.base;
+    for (const m of ["light", "dark"]) for (const [key, c] of Object.entries((o.colours || {})[m] || {}))
+      if (/^[a-z][a-z-]{0,20}$/.test(key) && /^#[0-9a-f]{6}$/.test(c)) r.style.setProperty(`--${m[0]}-${key}`, c);
+  } else if (/^[a-z][a-z0-9-]{0,39}$/.test(k || "")) document.documentElement.dataset.skin = k;
+} catch {}</script>
+<link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/fonts/faces.css">
+<style>
+/* theme: the default, made by themes.inline_block */
+:root { --l-bg: #f6f4ef; --l-panel: #ffffff; --l-ink: #1f1d1a; --l-muted: #6b665d; --l-line: #e2ddd2; --l-accent: #2f5d8a; --l-accent-ink: #ffffff; --l-chip: #ece7dc; --l-go: #2a7d4c; --l-go-ink: #ffffff; --l-go-soft: #d5ecdc; --l-go-soft-ink: #1d5535; --l-star: #a16207; --l-star-off: #8a847a; --l-ok: #2e7d4f; --l-warn: #8a5a12; --l-bad: #a33a2b; --l-r-bar: #f6f4ef; --l-r-pop: #ffffff; --l-r-field: #ece7dc; --l-r-rule: #e2ddd2; --l-r-edge: #cfc8bd; --l-r-dim: #a8a196; --l-r-ring: #8a847a; --l-r-ink: #1f1d1a; --l-r-muted: #6b665d; --l-r-soft: #4a463f; --l-r-link: #2f5d8a; --l-r-pick: #2f5d8a; --l-r-star: #a16207; --l-r-mark: #fde68a; --l-r-mark-ink: #1f1d1a; --l-load-page: #eef0e7; --l-load-ink: #46614b; --l-load-leaf: #86a083; --l-load-fill: #d2ddcb; --l-load-fruit: #a5805d; --l-load-muted: #5d6b5f; --l-page: #fbfaf6; --l-page-ink: #1c1917; --l-page-muted: #6b645c; --l-page-link: #2f5d8a; --d-bg: #16171a; --d-panel: #1f2125; --d-ink: #ecebe8; --d-muted: #a09d96; --d-line: #33363c; --d-accent: #7fb0e0; --d-accent-ink: #0d1520; --d-chip: #2a2d33; --d-go: #5fbf83; --d-go-ink: #0c1f13; --d-go-soft: #1d3b29; --d-go-soft-ink: #cbe9d5; --d-star: #fbbf24; --d-star-off: #8b8b93; --d-ok: #6cc28f; --d-warn: #e0b46f; --d-bad: #ef8a7a; --d-r-bar: #18181b; --d-r-pop: #1f1f23; --d-r-field: #2e2e33; --d-r-rule: #27272a; --d-r-edge: #3f3f46; --d-r-dim: #52525b; --d-r-ring: #71717a; --d-r-ink: #f4f4f5; --d-r-muted: #a1a1aa; --d-r-soft: #d4d4d8; --d-r-link: #93c5fd; --d-r-pick: #60a5fa; --d-r-star: #fbbf24; --d-r-mark: #67571a; --d-r-mark-ink: #fef9c3; --d-load-page: #131b16; --d-load-ink: #a3bf9f; --d-load-leaf: #6f8f72; --d-load-fill: #263629; --d-load-fruit: #bf946f; --d-load-muted: #8a9a8b; --d-page: #0c0c0d; --d-page-ink: #d6d3d1; --d-page-muted: #9c968f; --d-page-link: #93c5fd; --font: system-ui, -apple-system, "Segoe UI", sans-serif; }
+:root { --bg: var(--l-bg); --panel: var(--l-panel); --ink: var(--l-ink); --muted: var(--l-muted); --line: var(--l-line); --accent: var(--l-accent); --accent-ink: var(--l-accent-ink); --chip: var(--l-chip); --go: var(--l-go); --go-ink: var(--l-go-ink); --go-soft: var(--l-go-soft); --go-soft-ink: var(--l-go-soft-ink); --star: var(--l-star); --star-off: var(--l-star-off); --ok: var(--l-ok); --warn: var(--l-warn); --bad: var(--l-bad); --code: var(--l-chip); --picked: color-mix(in srgb, var(--l-accent) 12%, transparent); --shadow: 0 1px 3px rgba(0, 0, 0, .12); color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: var(--d-bg); --panel: var(--d-panel); --ink: var(--d-ink); --muted: var(--d-muted); --line: var(--d-line); --accent: var(--d-accent); --accent-ink: var(--d-accent-ink); --chip: var(--d-chip); --go: var(--d-go); --go-ink: var(--d-go-ink); --go-soft: var(--d-go-soft); --go-soft-ink: var(--d-go-soft-ink); --star: var(--d-star); --star-off: var(--d-star-off); --ok: var(--d-ok); --warn: var(--d-warn); --bad: var(--d-bad); --code: var(--d-chip); --picked: color-mix(in srgb, var(--d-accent) 14%, transparent); --shadow: 0 1px 3px rgba(0, 0, 0, .5); color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: var(--d-bg); --panel: var(--d-panel); --ink: var(--d-ink); --muted: var(--d-muted); --line: var(--d-line); --accent: var(--d-accent); --accent-ink: var(--d-accent-ink); --chip: var(--d-chip); --go: var(--d-go); --go-ink: var(--d-go-ink); --go-soft: var(--d-go-soft); --go-soft-ink: var(--d-go-soft-ink); --star: var(--d-star); --star-off: var(--d-star-off); --ok: var(--d-ok); --warn: var(--d-warn); --bad: var(--d-bad); --code: var(--d-chip); --picked: color-mix(in srgb, var(--d-accent) 14%, transparent); --shadow: 0 1px 3px rgba(0, 0, 0, .5); color-scheme: dark; }
+#reader, #reader[data-chrome="dark"], .rguide { --r-bar: var(--d-r-bar); --r-pop: var(--d-r-pop); --r-field: var(--d-r-field); --r-rule: var(--d-r-rule); --r-edge: var(--d-r-edge); --r-dim: var(--d-r-dim); --r-ring: var(--d-r-ring); --r-ink: var(--d-r-ink); --r-muted: var(--d-r-muted); --r-soft: var(--d-r-soft); --r-link: var(--d-r-link); --r-pick: var(--d-r-pick); --r-star: var(--d-r-star); --r-mark: var(--d-r-mark); --r-mark-ink: var(--d-r-mark-ink); }
+#reader[data-chrome="light"] { --r-bar: var(--l-r-bar); --r-pop: var(--l-r-pop); --r-field: var(--l-r-field); --r-rule: var(--l-r-rule); --r-edge: var(--l-r-edge); --r-dim: var(--l-r-dim); --r-ring: var(--l-r-ring); --r-ink: var(--l-r-ink); --r-muted: var(--l-r-muted); --r-soft: var(--l-r-soft); --r-link: var(--l-r-link); --r-pick: var(--l-r-pick); --r-star: var(--l-r-star); --r-mark: var(--l-r-mark); --r-mark-ink: var(--l-r-mark-ink); }
+.rload { --lp: var(--l-load-page); --li: var(--l-load-ink); --ll: var(--l-load-leaf); --lf: var(--l-load-fill); --lr: var(--l-load-fruit); --lm: var(--l-load-muted); --lt: color-mix(in srgb, var(--l-load-ink) 16%, transparent); }
+.rload.dark { --lp: var(--d-load-page); --li: var(--d-load-ink); --ll: var(--d-load-leaf); --lf: var(--d-load-fill); --lr: var(--d-load-fruit); --lm: var(--d-load-muted); --lt: color-mix(in srgb, var(--d-load-ink) 16%, transparent); }
+/* theme: end */
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font); }
+main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
+a { color: var(--accent); }
+.back { font-size: 14px; text-decoration: none; }
+h1 { font-size: 24px; margin: 10px 0 4px; }
+.state { color: var(--muted); margin: 0 0 14px; }
+section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; margin: 14px 0; }
+h2 { font-size: 16px; margin: 0 0 8px; }
+button { font: inherit; font-size: 14px; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--line);
+         background: var(--panel); color: var(--ink); cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+button:disabled { opacity: .5; cursor: default; }
+button.chip { font-size: 13px; padding: 3px 10px; margin: 0 6px 6px 0; background: var(--chip); border-color: var(--chip); }
+button.chip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.tables { display: flex; flex-wrap: wrap; }
+.tables .n { color: inherit; opacity: .7; margin-left: 4px; font-variant-numeric: tabular-nums; }
+.grid { overflow-x: auto; margin-top: 10px; }
+table { border-collapse: collapse; font-size: 13px; }
+td, th { border-top: 1px solid var(--line); padding: 5px 12px 5px 0; vertical-align: top; text-align: left; }
+th { font-weight: 600; color: var(--muted); font-size: 12px; border-top: 0; white-space: nowrap; }
+td { white-space: nowrap; }
+td.long { white-space: pre-wrap; overflow-wrap: anywhere; min-width: 320px; max-width: 480px; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.none { color: var(--muted); }
+code, pre, textarea { font: 13px/1.45 ui-monospace, Consolas, monospace; }
+pre { background: var(--chip); border-radius: 4px; padding: 8px 12px; margin: 6px 0 0; overflow-x: auto; white-space: pre-wrap; }
+textarea { width: 100%; background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; resize: vertical; }
+.row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.note { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+.bad { color: var(--bad); }
+details summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="/server">← The server page</a>
+<h1>Library database</h1>
+<p class="state" id="where">Reading…</p>
+
+<section>
+<h2>Tables</h2>
+<div class="tables" id="tables"></div>
+<p class="note">Read only: the database is opened for reading, and nothing here can change it. Password hashes and the browser
+logins' digests read as nothing. A question stops after a few seconds<span id="most" hidden></span>.</p>
+</section>
+
+<section id="one" hidden>
+<h2 id="name"></h2>
+<details><summary>How it's made</summary><pre id="schema"></pre></details>
+<div class="grid" id="rows"></div>
+<div class="row"><button id="earlier">Earlier</button><button id="later">Later</button><span class="note" id="at"></span></div>
+</section>
+
+<section>
+<h2>Ask in SQL</h2>
+<div class="tables" id="examples"></div>
+<textarea id="sql" rows="5" spellcheck="false" aria-label="A question in SQL">SELECT kind, count(*) AS titles FROM title GROUP BY kind ORDER BY titles DESC;</textarea>
+<div class="row"><button class="primary" id="run">Run</button><span class="note" id="said"></span></div>
+<div class="grid" id="result"></div>
+</section>
+</main>
+<script>
+"use strict";
+const KEY = "{{key}}";
+const $ = (id) => document.getElementById(id);
+let current = { name: "", page: 0 };
+
+async function ask(path, body) {
+  const r = await fetch(path, { method: body ? "POST" : "GET", cache: "no-store",
+    headers: { "X-Server-Key": KEY, ...(body ? { "Content-Type": "application/json" } : {}) },
+    body: body ? JSON.stringify(body) : undefined });
+  if (r.status === 401) {  // the login has ended: on to the login page, and back here after, as the library page does
+    location.assign("/login?" + new URLSearchParams({ next: location.pathname }));
+    throw new Error("The login has ended: on to the login page.");
+  }
+  // The page's key is made anew at each server start, so a page left open across one has the old key; or a proxy
+  // that doesn't hand on the browser's name makes this page another site's to the server, at every ask
+  if (r.status === 403) throw new Error("The server restarted, or refused this page's request: reload this page. If it keeps saying so, a proxy in front of the server may not be handing on the name the browser used (the help's Open to the internet).");
+  let data = {};
+  try { data = await r.json(); } catch { data = {}; }
+  if (!r.ok || !data.ok) throw new Error(data.error || `The server said ${r.status}.`);
+  return data;
+}
+
+function cell(row, value) {
+  const td = document.createElement("td");
+  if (value === null) { td.className = "none"; td.textContent = "∅"; }
+  else {
+    if (typeof value === "number") td.className = "num";
+    else if (String(value).length > 60 || /[\r\n]/.test(String(value))) td.className = "long";
+    td.textContent = String(value);
+  }
+  row.append(td);
+}
+
+function grid(into, data) {
+  into.textContent = "";
+  const t = document.createElement("table"), head = document.createElement("tr");
+  for (const name of data.columns) { const th = document.createElement("th"); th.textContent = name; head.append(th); }
+  t.append(head);
+  for (const values of data.rows) { const tr = document.createElement("tr"); values.forEach((v) => cell(tr, v)); t.append(tr); }
+  into.append(t);
+}
+
+async function showTables() {
+  const data = await ask("/database/tables");
+  $("where").textContent = `${data.file}, schema ${data.schema}. ${data.tables.length} tables.`;
+  $("most").textContent = `, and shows at most ${data.limits.rows.toLocaleString()} rows`;  // the server's own limit
+  $("most").hidden = false;
+  const box = $("tables");
+  box.textContent = "";
+  for (const t of data.tables) {
+    const b = document.createElement("button");
+    b.className = "chip" + (t.name === current.name ? " on" : "");
+    b.textContent = t.name;
+    const n = document.createElement("span"); n.className = "n"; n.textContent = t.rows.toLocaleString();
+    b.append(n);
+    b.onclick = () => showTable(t.name, 0);
+    box.append(b);
+  }
+}
+
+async function showTable(name, page) {
+  try {
+    const data = await ask(`/database/table?name=${encodeURIComponent(name)}&page=${page}`);
+    current = { name, page };
+    $("one").hidden = false;
+    $("name").textContent = name;
+    $("schema").textContent = data.sql;
+    grid($("rows"), data);
+    $("earlier").disabled = page === 0;
+    $("later").disabled = !data.more;
+    const first = page * data.size + 1;  // a page of the table is as many rows as the server says
+    $("at").textContent = data.rows.length ? `Rows ${first.toLocaleString()} to ${(first + data.rows.length - 1).toLocaleString()}` +
+      (data.hidden.length ? `. ${data.hidden.join(", ")}: kept out of sight.` : ".") : "No rows.";
+    for (const b of $("tables").children) b.classList.toggle("on", b.firstChild.textContent === name);
+  } catch (e) { $("at").textContent = e.message; }
+}
+
+async function run() {
+  $("run").disabled = true;
+  $("said").textContent = "Asking…";
+  $("said").classList.remove("bad");
+  try {
+    const data = await ask("/database/query", { sql: $("sql").value });
+    grid($("result"), data);
+    $("said").textContent = `${data.rows.length.toLocaleString()} row${data.rows.length === 1 ? "" : "s"}` +
+      (data.more ? ", and more not shown" : "") + `, in ${data.ms} ms.`;
+  } catch (e) {
+    $("result").textContent = "";
+    $("said").textContent = e.message;
+    $("said").classList.add("bad");
+  } finally { $("run").disabled = false; }
+}
+
+$("earlier").onclick = () => showTable(current.name, Math.max(0, current.page - 1));
+$("later").onclick = () => showTable(current.name, current.page + 1);
+$("run").onclick = run;
+$("sql").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) run(); });
+ask("/database/examples").then((data) => {
+  for (const [what, sql] of data.examples) {
+    const b = document.createElement("button");
+    b.className = "chip"; b.textContent = what;
+    b.onclick = () => { $("sql").value = sql; run(); };
+    $("examples").append(b);
+  }
+}).catch(() => {});
+showTables().catch((e) => { $("where").textContent = e.message; $("where").classList.add("bad"); });
+</script>
+</body>
+</html>

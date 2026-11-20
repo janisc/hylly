@@ -1,0 +1,52 @@
+# The lookups, once: hylly catalog --lookup, which asks the lookup sources ([lookups] in the settings) about the titles
+# not looked up yet, and then builds the library page with what came. hylly-lookup.timer starts it every night, after hylly-download.timer. The Inbox's pass looks up only the
+# Inbox's own new books, so the shops' downloads need this. The help tells more ("Looking up details online", "On a timer").
+#
+# It goes on its own: a build that would lose many titles asks first, and with nobody to answer, as here, it keeps
+# nothing, ends with exit code 8 and sends a note to your phone (secrets/ntfy-url); run hylly catalog at a terminal
+# then. The unit counts as failed meanwhile (systemctl --failed).
+#
+# Run it on the computer that has the library. On one that reaches the server over ssh ([remote] ssh in its settings),
+# the command is passed on over ssh, and a timer has no ssh-agent of yours: a key with a passphrase can't be used, so
+# it fails every night.
+#
+# In a copy of your own, put in your user for "someone" and where the program and Hylly's settings folder are, as in
+# hylly.service. Then:
+#   sudo cp hylly-lookup.service hylly-lookup.timer /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now hylly-lookup.timer
+#   systemctl list-timers hylly-lookup    # when it ran, and when it runs next
+#   journalctl -u hylly-lookup            # what it said
+[Unit]
+Description=Hylly lookups and the library page, once
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=someone
+Group=someone
+# What it writes in the library, its group may change too, as on a library a share writes for that group: as
+# hylly-jobs.service
+UMask=0002
+WorkingDirectory=~
+ExecStart=/home/someone/.local/share/uv/tools/hylly/bin/hylly catalog --lookup
+Environment=PYTHONUNBUFFERED=1
+# The sources are asked slowly, as their limits say: a first run can take hours
+TimeoutStartSec=infinity
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+
+# Fewer rights. Not the server's walls: it needs the lookups' keys in the logins folder, and writes the library's
+# catalog and records. The settings folder, with your rules and the alarms' ntfy address in secrets/, it only reads.
+ReadOnlyPaths=/home/someone/.config/hylly
+ProtectSystem=full
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+NoNewPrivileges=yes

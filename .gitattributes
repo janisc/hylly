@@ -1,0 +1,28 @@
+# Line endings: LF in the repository and in every checkout, whatever each computer's git settings say; the Windows
+# scripts keep CRLF, as cmd.exe expects
+* text=auto eol=lf
+*.cmd text eol=crlf
+
+# Never text: pictures, fonts, PDFs, books and archives
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.pdf binary
+*.epub binary
+*.mobi binary
+*.azw3 binary
+*.cbz binary
+*.cbr binary
+*.cb7 binary
+*.zip binary
+*.rar binary
+*.7z binary
+*.gz binary

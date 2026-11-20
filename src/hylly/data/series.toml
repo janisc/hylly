@@ -1,0 +1,22 @@
+# Series and their numbers. Your own rules files can change any of it: see docs/rules.md, or hylly rules.
+# The words are words as in the other files: case and accents not counting, any spaces or punctuation between a
+# phrase's words; a * at the end takes in the rest of a word ("collect*" for collected and collection).
+
+[series]
+# The words before a title's number in its series: "Lantern Wolf Vol. 1", "The Rust Orchard Book 3".
+# A title that is only one of them and its number ("Volume 8") is shown with its series in front.
+words = ["vol", "volume", "book", "tome", "issue", "no", "part"]
+# The same in brackets at the end of a file's name: "The Lantern Keeper (Harbor Lights Book 2)".
+bracket_words = ["book"]
+# A shop's file whose name says it is one part of several: all of them are downloaded ("Issue 36", "Part 2").
+part_words = ["issue", "part", "vol", "volume", "book", "chapter", "episode"]
+# Words a series' name leaves out when it is compared, so that spellings of one series fold together:
+# "Marshal Kane: The Complete Trail Logs" is "Marshal Kane Trail Logs".
+fold_words = ["the complete", "the", "complete", "collection"]
+# What makes a comic's title a collected edition rather than a single issue, when its details are looked up.
+collected_words = ["vol", "vols", "volume", "volumes", "book", "tpb", "hc", "hardcover", "omnibus", "compendium",
+                   "graphic novel", "deluxe", "library edition", "collection", "archive", "archives", "treasury"]
+# A note in brackets that a comic's title drops when it is looked up: "(Digital Edition)".
+comic_notes = ["digital", "digital edition", "graphic novel"]
+# Words a comic's series name drops when it is looked up.
+comic_noise = ["tpb", "hc", "hardcover", "the complete", "complete"]

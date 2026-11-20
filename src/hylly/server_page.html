@@ -1,0 +1,987 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Library server</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230C447C'/%3E%3Crect x='22' y='28' width='12' height='46' rx='2' fill='%23F1EFE8'/%3E%3Crect x='36' y='34' width='12' height='40' rx='2' fill='%23FAC775'/%3E%3Crect x='50' y='26' width='11' height='48' rx='2' fill='%23F0997B'/%3E%3Crect x='64' y='30' width='12' height='44' rx='2' fill='%2385B7EB' transform='rotate(16 70 74)'/%3E%3Crect x='18' y='74' width='64' height='6' rx='3' fill='%23B5D4F4'/%3E%3C/svg%3E">
+<!-- Served by hylly serve at /server, to the library's owners only. The values in double braces, the buttons' key and
+     the server's process and start, are filled in per server start (dashboard.page). -->
+<script>try {  /* the colours and the theme this browser chose, as the library page does */
+  const t = localStorage.getItem("hylly.theme"), k = localStorage.getItem("hylly.look") || localStorage.getItem("hylly.lookhere");
+  if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+  if (k === "yours") {  /* your own theme: its colours over the theme it was made from (themes.own_theme) */
+    const o = JSON.parse(localStorage.getItem("hylly.own") || "null") || {}, r = document.documentElement;
+    if (/^[a-z][a-z0-9-]{0,39}$/.test(o.base || "")) r.dataset.skin = o.base;
+    for (const m of ["light", "dark"]) for (const [key, c] of Object.entries((o.colours || {})[m] || {}))
+      if (/^[a-z][a-z-]{0,20}$/.test(key) && /^#[0-9a-f]{6}$/.test(c)) r.style.setProperty(`--${m[0]}-${key}`, c);
+  } else if (/^[a-z][a-z0-9-]{0,39}$/.test(k || "")) document.documentElement.dataset.skin = k;
+} catch {}</script>
+<link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/fonts/faces.css">
+<style>
+/* theme: the default, made by themes.inline_block */
+:root { --l-bg: #f6f4ef; --l-panel: #ffffff; --l-ink: #1f1d1a; --l-muted: #6b665d; --l-line: #e2ddd2; --l-accent: #2f5d8a; --l-accent-ink: #ffffff; --l-chip: #ece7dc; --l-go: #2a7d4c; --l-go-ink: #ffffff; --l-go-soft: #d5ecdc; --l-go-soft-ink: #1d5535; --l-star: #a16207; --l-star-off: #8a847a; --l-ok: #2e7d4f; --l-warn: #8a5a12; --l-bad: #a33a2b; --l-r-bar: #f6f4ef; --l-r-pop: #ffffff; --l-r-field: #ece7dc; --l-r-rule: #e2ddd2; --l-r-edge: #cfc8bd; --l-r-dim: #a8a196; --l-r-ring: #8a847a; --l-r-ink: #1f1d1a; --l-r-muted: #6b665d; --l-r-soft: #4a463f; --l-r-link: #2f5d8a; --l-r-pick: #2f5d8a; --l-r-star: #a16207; --l-r-mark: #fde68a; --l-r-mark-ink: #1f1d1a; --l-load-page: #eef0e7; --l-load-ink: #46614b; --l-load-leaf: #86a083; --l-load-fill: #d2ddcb; --l-load-fruit: #a5805d; --l-load-muted: #5d6b5f; --l-page: #fbfaf6; --l-page-ink: #1c1917; --l-page-muted: #6b645c; --l-page-link: #2f5d8a; --d-bg: #16171a; --d-panel: #1f2125; --d-ink: #ecebe8; --d-muted: #a09d96; --d-line: #33363c; --d-accent: #7fb0e0; --d-accent-ink: #0d1520; --d-chip: #2a2d33; --d-go: #5fbf83; --d-go-ink: #0c1f13; --d-go-soft: #1d3b29; --d-go-soft-ink: #cbe9d5; --d-star: #fbbf24; --d-star-off: #8b8b93; --d-ok: #6cc28f; --d-warn: #e0b46f; --d-bad: #ef8a7a; --d-r-bar: #18181b; --d-r-pop: #1f1f23; --d-r-field: #2e2e33; --d-r-rule: #27272a; --d-r-edge: #3f3f46; --d-r-dim: #52525b; --d-r-ring: #71717a; --d-r-ink: #f4f4f5; --d-r-muted: #a1a1aa; --d-r-soft: #d4d4d8; --d-r-link: #93c5fd; --d-r-pick: #60a5fa; --d-r-star: #fbbf24; --d-r-mark: #67571a; --d-r-mark-ink: #fef9c3; --d-load-page: #131b16; --d-load-ink: #a3bf9f; --d-load-leaf: #6f8f72; --d-load-fill: #263629; --d-load-fruit: #bf946f; --d-load-muted: #8a9a8b; --d-page: #0c0c0d; --d-page-ink: #d6d3d1; --d-page-muted: #9c968f; --d-page-link: #93c5fd; --font: system-ui, -apple-system, "Segoe UI", sans-serif; }
+:root { --bg: var(--l-bg); --panel: var(--l-panel); --ink: var(--l-ink); --muted: var(--l-muted); --line: var(--l-line); --accent: var(--l-accent); --accent-ink: var(--l-accent-ink); --chip: var(--l-chip); --go: var(--l-go); --go-ink: var(--l-go-ink); --go-soft: var(--l-go-soft); --go-soft-ink: var(--l-go-soft-ink); --star: var(--l-star); --star-off: var(--l-star-off); --ok: var(--l-ok); --warn: var(--l-warn); --bad: var(--l-bad); --code: var(--l-chip); --picked: color-mix(in srgb, var(--l-accent) 12%, transparent); --shadow: 0 1px 3px rgba(0, 0, 0, .12); color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: var(--d-bg); --panel: var(--d-panel); --ink: var(--d-ink); --muted: var(--d-muted); --line: var(--d-line); --accent: var(--d-accent); --accent-ink: var(--d-accent-ink); --chip: var(--d-chip); --go: var(--d-go); --go-ink: var(--d-go-ink); --go-soft: var(--d-go-soft); --go-soft-ink: var(--d-go-soft-ink); --star: var(--d-star); --star-off: var(--d-star-off); --ok: var(--d-ok); --warn: var(--d-warn); --bad: var(--d-bad); --code: var(--d-chip); --picked: color-mix(in srgb, var(--d-accent) 14%, transparent); --shadow: 0 1px 3px rgba(0, 0, 0, .5); color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: var(--d-bg); --panel: var(--d-panel); --ink: var(--d-ink); --muted: var(--d-muted); --line: var(--d-line); --accent: var(--d-accent); --accent-ink: var(--d-accent-ink); --chip: var(--d-chip); --go: var(--d-go); --go-ink: var(--d-go-ink); --go-soft: var(--d-go-soft); --go-soft-ink: var(--d-go-soft-ink); --star: var(--d-star); --star-off: var(--d-star-off); --ok: var(--d-ok); --warn: var(--d-warn); --bad: var(--d-bad); --code: var(--d-chip); --picked: color-mix(in srgb, var(--d-accent) 14%, transparent); --shadow: 0 1px 3px rgba(0, 0, 0, .5); color-scheme: dark; }
+#reader, #reader[data-chrome="dark"], .rguide { --r-bar: var(--d-r-bar); --r-pop: var(--d-r-pop); --r-field: var(--d-r-field); --r-rule: var(--d-r-rule); --r-edge: var(--d-r-edge); --r-dim: var(--d-r-dim); --r-ring: var(--d-r-ring); --r-ink: var(--d-r-ink); --r-muted: var(--d-r-muted); --r-soft: var(--d-r-soft); --r-link: var(--d-r-link); --r-pick: var(--d-r-pick); --r-star: var(--d-r-star); --r-mark: var(--d-r-mark); --r-mark-ink: var(--d-r-mark-ink); }
+#reader[data-chrome="light"] { --r-bar: var(--l-r-bar); --r-pop: var(--l-r-pop); --r-field: var(--l-r-field); --r-rule: var(--l-r-rule); --r-edge: var(--l-r-edge); --r-dim: var(--l-r-dim); --r-ring: var(--l-r-ring); --r-ink: var(--l-r-ink); --r-muted: var(--l-r-muted); --r-soft: var(--l-r-soft); --r-link: var(--l-r-link); --r-pick: var(--l-r-pick); --r-star: var(--l-r-star); --r-mark: var(--l-r-mark); --r-mark-ink: var(--l-r-mark-ink); }
+.rload { --lp: var(--l-load-page); --li: var(--l-load-ink); --ll: var(--l-load-leaf); --lf: var(--l-load-fill); --lr: var(--l-load-fruit); --lm: var(--l-load-muted); --lt: color-mix(in srgb, var(--l-load-ink) 16%, transparent); }
+.rload.dark { --lp: var(--d-load-page); --li: var(--d-load-ink); --ll: var(--d-load-leaf); --lf: var(--d-load-fill); --lr: var(--d-load-fruit); --lm: var(--d-load-muted); --lt: color-mix(in srgb, var(--d-load-ink) 16%, transparent); }
+/* theme: end */
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font); }
+main { max-width: 860px; margin: 0 auto; padding: 20px 16px 60px; }
+a { color: var(--accent); }
+.back { font-size: 14px; text-decoration: none; }
+.head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 10px 0 4px; }
+h1 { font-size: 24px; margin: 0; flex: 1 1 auto; }
+.state { color: var(--muted); margin: 0 0 10px; }
+/* The page's parts as tabs, the bar staying at the top as the page scrolls; on a narrow screen it scrolls sideways */
+.tabs { position: sticky; top: 0; z-index: 5; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: thin; margin: 0 -16px 14px;
+        padding: 6px 16px 0; background: var(--bg); border-bottom: 1px solid var(--line); }
+.tabs [role="tab"] { flex: none; border: 0; border-bottom: 3px solid transparent; border-radius: 6px 6px 0 0; background: none;
+                     color: var(--muted); font-weight: 600; padding: 8px 12px 7px; white-space: nowrap; }
+.tabs [role="tab"]:hover { color: var(--ink); }
+.tabs [role="tab"][aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tabs [role="tab"]:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.tabs .count { display: inline-block; min-width: 1.6em; margin-left: 6px; padding: 0 6px; border-radius: 999px; background: var(--accent);
+               color: var(--accent-ink); font-size: 12px; line-height: 1.6; text-align: center; }
+[role="tabpanel"] { margin-top: 0; scroll-margin-top: 56px; }  /* a link to one: its top under the bar */
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--muted); margin-right: 6px; vertical-align: 0; }
+.dot.up { background: var(--ok); }
+.dot.down { background: var(--bad); }
+button { font: inherit; font-size: 14px; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--line);
+         background: var(--panel); color: var(--ink); cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+button:disabled { opacity: .5; cursor: default; }
+button.small { font-size: 12px; padding: 2px 8px; margin-left: 6px; }
+#banner { display: none; border-radius: 10px; padding: 10px 14px; margin: 0 0 14px; border: 1px solid var(--line); background: var(--panel); }
+#banner.show { display: block; }
+#banner.warn { border-color: var(--warn); color: var(--warn); }
+#banner.bad { border-color: var(--bad); color: var(--bad); }
+section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; margin: 14px 0; }
+h2 { font-size: 16px; margin: 0 0 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+td, th { border-top: 1px solid var(--line); padding: 6px 10px 6px 0; vertical-align: top; text-align: left; }
+th { font-weight: 600; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; border-top: 0; }
+.kv td:first-child { white-space: nowrap; color: var(--muted); width: 150px; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; }
+code, pre { font: 13px/1.45 ui-monospace, Consolas, monospace; background: var(--code); border-radius: 4px; }
+code { padding: 1px 5px; word-break: break-word; }
+pre { padding: 8px 12px; margin: 6px 0 0; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+.note { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+/* What an answer did: a note fixed near the top, over the page, so that nobody is moved to where it is; it goes by itself */
+#decided:not(:empty), #removedsaid:not(:empty) { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); z-index: 30;
+  width: max-content; max-width: min(640px, calc(100vw - 32px)); margin: 0; padding: 10px 14px; border: 1px solid var(--line);
+  border-radius: 10px; background: var(--panel); font-size: 14px; box-shadow: 0 4px 16px rgba(0, 0, 0, .35); }
+.empty { color: var(--muted); }
+.warn { color: var(--warn); }
+.question { border-top: 1px solid var(--line); padding: 10px 0 4px; }
+.question:first-of-type { border-top: 0; }
+.question .why { color: var(--muted); font-size: 13px; }
+.question .options { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 0; }
+.question .options button.guess { border-color: var(--accent); }
+/* Compare: a question's files side by side in a dialog the size of the window, nothing in it to scroll: a column for
+   each file, side by side on a phone too, with what the file is, then its page as large as the rest of the column
+   lets it (fit: never cropped), a corner magnified at the file's own size, and right under the page the answer that
+   keeps it; at the bottom, the turning and the answers about both */
+html:has(dialog.cmp[open]) { overflow: hidden; }  /* the list behind stays where it was */
+dialog.cmp { width: 100%; height: 100%; max-width: none; max-height: none; inset: 0; margin: 0; padding: 0; border: 0;
+             border-radius: 0; overflow: hidden; }
+dialog.cmp[open] { display: flex; flex-direction: column; }
+.cmp-top { flex: none; display: flex; align-items: flex-start; gap: 12px; padding: 6px 8px 6px 16px; border-bottom: 1px solid var(--line);
+           font-size: 14px; line-height: 1.35; }
+.cmp-asked { flex: 1 1 auto; min-width: 0; padding-top: 4px; overflow-wrap: anywhere; }
+.cmp-asked .why, .cmp-asked .note { font-size: 12px; margin: 0; }
+button.cmp-close { flex: none; font-size: 22px; line-height: 1; padding: 6px 12px; }
+.cmp-sides { flex: 1 1 0; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; grid-auto-flow: column;
+             grid-auto-columns: minmax(0, 1fr); align-content: center; column-gap: 16px; padding: 8px 16px 0; }
+.cmp-facts { display: flex; justify-content: center; align-items: flex-start; gap: 8px; min-width: 0; padding-bottom: 6px; font-size: 13px; line-height: 1.35; }
+.cmp-facts > div { min-width: 0; overflow-wrap: anywhere; }
+.cmp-facts b, .cmp-line { display: block; }
+.cmp-cover { flex: none; height: 4.1em; max-width: 30%; object-fit: contain; border: 1px solid var(--line); }
+.cmp-stage { min-height: 0; min-width: 0; display: flex; align-items: flex-end; justify-content: center; }  /* fit measures it: no padding */
+.cmp-stage > .why { align-self: center; text-align: center; }
+.cmp-pagebox { position: relative; flex: none; width: 0; height: 0; }
+.cmp-page { display: block; width: 100%; height: 100%; cursor: crosshair; border: 1px solid var(--line); }
+.cmp-inset { position: absolute; right: 6px; bottom: 6px; width: 42%; aspect-ratio: 1; border: 2px solid var(--accent);
+  background-color: var(--panel); background-repeat: no-repeat; box-shadow: 0 2px 8px rgba(0, 0, 0, .35); pointer-events: none; }
+.cmp-inset.top { bottom: auto; top: 6px; }
+.cmp-inset.left { right: auto; left: 6px; }
+.cmp-keep { display: flex; justify-content: center; padding: 8px 0 0; }
+button.keep { background: var(--picked); border: 2px solid var(--accent); color: var(--ink); font-size: 15px; font-weight: 600; padding: 7px 18px; }  /* the decision: the accent's tint */
+.cmp-bottom { flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px 16px; }
+.cmp-bottom:empty { display: none; }
+.cmp-both { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.cmp-turn { display: flex; align-items: center; gap: 8px; width: min(100%, 720px); }
+.cmp-turn input { flex: 1 1 auto; min-width: 0; }
+@media (max-width: 640px), (max-height: 560px) { .cmp-cover { display: none; } }
+@media (max-width: 640px) { button.keep { font-size: 14px; padding: 6px 10px; } }
+@media (max-height: 560px) {  /* a phone on its side: the turning and the answers about both on one line */
+  .cmp-bottom { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 6px 16px; padding: 6px 16px; }
+  .cmp-turn { width: auto; flex: 1 1 260px; max-width: 520px; }
+  .cmp-sides { padding-top: 4px; }
+  .cmp-facts { font-size: 12px; line-height: 1.3; padding-bottom: 4px; }
+  .cmp-what, .cmp-at { display: inline; }  /* what it is and the page on one line */
+  .cmp-at::before { content: " · "; }
+  .cmp-keep { padding-top: 4px; }
+  button.keep { font-size: 14px; padding: 4px 14px; }
+  .cmp-bottom button { padding-top: 4px; padding-bottom: 4px; }
+}
+@media (max-height: 560px) and (min-width: 700px) {  /* and with room for it, Keep both still in the middle */
+  .cmp-bottom { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+  .cmp-turn { width: auto; max-width: none; }
+  .cmp-turn:only-child { grid-column: 1 / -1; justify-self: center; width: min(100%, 520px); }
+}
+/* A question asked before files go, or go for good; and the Removed part */
+dialog { max-width: min(520px, calc(100vw - 32px)); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px;
+         background: var(--panel); color: var(--ink); }
+dialog::backdrop { background: rgba(0, 0, 0, .45); }
+dialog .options { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; margin: 14px 0 0; }
+button.danger { border-color: var(--bad); color: var(--bad); }
+#removedlist .options { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
+#removedlist td:first-child { overflow-wrap: anywhere; }
+@media (max-width: 560px) { .kv td:first-child { width: auto; } }
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="/catalog/index.html">← Back to the library</a>
+<div class="head">
+  <h1>Library server</h1>
+  <button id="restart" class="primary" disabled>Restart</button>
+  <button id="stop" disabled>Stop</button>
+</div>
+<p class="state" id="state"><span class="dot"></span>Asking the server…</p>
+<div class="tabs" id="tabs" role="tablist" aria-label="The Server page's parts">
+<button type="button" role="tab" id="tab-decide" aria-controls="decide" aria-selected="false" tabindex="-1" hidden>To decide<span class="count" id="decidecount" hidden></span></button>
+<button type="button" role="tab" id="tab-removed" aria-controls="removed" aria-selected="false" tabindex="-1" hidden>Removed</button>
+<button type="button" role="tab" id="tab-addresses" aria-controls="addresses" aria-selected="false" tabindex="-1">Addresses</button>
+<button type="button" role="tab" id="tab-running" aria-controls="running" aria-selected="true" tabindex="0">How it runs</button>
+<button type="button" role="tab" id="tab-devices" aria-controls="devices" aria-selected="false" tabindex="-1">Devices</button>
+<button type="button" role="tab" id="tab-alarms" aria-controls="alarms" aria-selected="false" tabindex="-1">Alarms</button>
+<button type="button" role="tab" id="tab-access" aria-controls="access" aria-selected="false" tabindex="-1">Access log</button>
+<button type="button" role="tab" id="tab-messages" aria-controls="messages" aria-selected="false" tabindex="-1">Messages</button>
+</div>
+<div id="banner" role="status"></div>
+<p class="note" id="typed" hidden></p>
+<div id="behind"></div>
+
+<section id="decide" role="tabpanel" aria-labelledby="tab-decide" tabindex="0" hidden>
+<h2>To decide</h2>
+<div id="questions"></div>
+<p id="decided" class="note" role="status" tabindex="-1"></p>
+<details id="answeredbox" hidden><summary>Answered (<span id="answeredn">0</span>)</summary><div id="answered"></div></details>
+<p class="note">What the rules of the downloads and of the catalog couldn't settle by themselves. Each was answered by the rules' guess, marked, unless it is held back (<code>unsure = "ask"</code> under <code>[download]</code>); an answer here is the same as <code>hylly decide NUMBER CHOICE</code>, by the number before each, a correction like any other. Take back, under Answered, takes that one answer back, as <code>hylly decide NUMBER auto</code> does: the next run or <code>hylly catalog</code> asks again where the rules are still unsure.</p>
+<p class="note">Two copies that may be one book: <b>Keep both</b> keeps two cards, not asked again. In <b>Compare the files</b>, <b>Keep only this one</b>, under a copy's page, moves every file of the other card into <code>_Removed</code> in the library, and <b>Remove both…</b> those of both, never deleting them: Put back, under Removed, brings each back. A catalog build then starts, and the card leaves the library page once it's done. One card of the two is <code>hylly decide NUMBER 1</code>.</p>
+</section>
+
+<section id="removed" role="tabpanel" aria-labelledby="tab-removed" tabindex="0" hidden>
+<h2>Removed</h2>
+<div id="removedlist"></div>
+<p id="removedsaid" class="note" role="status" tabindex="-1"></p>
+<p class="note">The files removed under To decide, each in <code>_Removed</code> in the library at its own place below the library, where no catalog build reads it. <b>Put back</b> moves one back to its place, if that is free, and starts a catalog build that brings its card back. <b>Empty _Removed…</b> deletes everything in it for good.</p>
+</section>
+
+<dialog id="removeboth" aria-labelledby="removebothtitle">
+<form method="dialog">
+<h2 id="removebothtitle">Remove both copies?</h2>
+<div class="asked"></div>
+<p class="note">They go to <code>_Removed</code> in the library, not deleted: Put back, under Removed on this page, brings each back until <code>_Removed</code> is emptied.</p>
+<div class="options"><button value="cancel" autofocus>Cancel</button><button value="ok" class="danger">Remove both</button></div>
+</form>
+</dialog>
+
+<dialog id="compare" class="cmp" aria-labelledby="cmpasked">
+<div class="cmp-top"><div id="cmpasked" class="cmp-asked"></div><button type="button" class="cmp-close" data-cmpclose aria-label="Close the comparison">×</button></div>
+<div id="cmpsides" class="cmp-sides"></div>
+<div id="cmpbottom" class="cmp-bottom"></div>
+</dialog>
+
+<dialog id="emptyremoved" aria-labelledby="emptyremovedtitle">
+<form method="dialog">
+<h2 id="emptyremovedtitle">Empty _Removed?</h2>
+<div class="asked"></div>
+<p class="note">For good: nothing brings them back, not Put back.</p>
+<div class="options"><button value="cancel" autofocus>Cancel</button><button value="ok" class="danger">Delete them</button></div>
+</form>
+</dialog>
+
+<section id="addresses" role="tabpanel" aria-labelledby="tab-addresses" tabindex="0" hidden>
+<h2>Addresses</h2>
+<table class="kv"><tbody>
+<tr id="pc_row" hidden><td>On this computer</td><td id="pc"></td></tr>
+<tr><td>In a browser</td><td id="browser"></td></tr>
+<tr><td>Reading apps (OPDS)</td><td id="opds"></td></tr>
+<tr><td>E-readers (OPDS)</td><td id="ereader"></td></tr>
+<tr id="at_home_row" hidden><td>Home network</td><td id="at_home"></td></tr>
+</tbody></table>
+</section>
+
+<section id="running" role="tabpanel" aria-labelledby="tab-running" tabindex="0">
+<h2>How it runs</h2>
+<table class="kv"><tbody>
+<tr><td>Starts at logon</td><td id="logon"></td></tr>
+<tr><td>Library</td><td id="library"></td></tr>
+<tr><td>Catalog</td><td id="catalog"></td></tr>
+<tr><td>Memory</td><td id="memory"></td></tr>
+<tr><td>CPU</td><td id="cpu"></td></tr>
+<tr><td>Pages</td><td id="pages"></td></tr>
+<tr><td>Process</td><td id="process"></td></tr>
+<tr><td>Login</td><td id="login"></td></tr>
+</tbody></table>
+<p class="note"><a href="/database">The database</a>: its tables, and questions of your own in SQL, read only.</p>
+<p class="note">Settings are under <code>[server]</code> in <code id="settings"></code>: <code>listen</code>, <code>address</code>, <code>port</code> and <code>access_log</code>: they are the server's only options. Restart to apply a change. Users take effect at once.</p>
+<p class="note">The same from a terminal: <code>hylly server status</code>, <code>restart</code>, <code>stop</code>, and <code>autostart on</code> or <code>off</code> for the start at logon. Only the library's owners see this page.</p>
+</section>
+
+<section id="devices" role="tabpanel" aria-labelledby="tab-devices" tabindex="0" hidden>
+<h2>Devices since it started</h2>
+<div id="devicelist"></div>
+</section>
+
+<section id="alarms" role="tabpanel" aria-labelledby="tab-alarms" tabindex="0" hidden>
+<h2>Alarms</h2>
+<div id="alarmlist"></div>
+</section>
+
+<section id="access" role="tabpanel" aria-labelledby="tab-access" tabindex="0" hidden>
+<h2>Access log</h2>
+<div id="accesslist"></div>
+</section>
+
+<section id="messages" role="tabpanel" aria-labelledby="tab-messages" tabindex="0" hidden>
+<h2>Messages</h2>
+<div id="log"></div>
+</section>
+</main>
+<script>
+const KEY = "{{key}}";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+let last = null, timer = null, busy = false, leaving = false;
+// The server that wrote this page, its process and when it started, as the status says them: another one has another
+// key. Not filled in (the template itself): the first status to answer.
+let first = /^\d+ /.test("{{pid}} {{started}}") ? "{{pid}} {{started}}" : null;
+let said = null;  // what a button left to say, {text, kind}: it stays until the next button press or its Close
+
+function when(iso) {
+  if (!iso) return "?";
+  const d = new Date(iso);
+  return d.toLocaleString(undefined, {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"});
+}
+function span(seconds) {
+  const m = Math.floor(seconds / 60), h = Math.floor(m / 60), d = Math.floor(h / 24);
+  if (d) return `${d} d ${h % 24} h`;
+  if (h) return `${h} h ${m % 60} min`;
+  return m ? `${m} min` : "under a minute";
+}
+// A file's or a disk's size as the commands say it (words.size_words, which tests/test_words.py holds this to): in
+// thousands, as disks are sold, in the largest unit it has at least one of (the smallest in which it rounds to
+// under a thousand), to one decimal, a half up.
+const sizeWords = b => {
+  if (b < 0) return "-" + sizeWords(-b);
+  const n = Math.round(b);
+  if (n < 1000) return `${n} byte${n === 1 ? "" : "s"}`;
+  for (const [unit, word] of [[1e3, "KB"], [1e6, "MB"], [1e9, "GB"], [1e12, "TB"]]) {
+    const whole = n * 10 + unit / 2;
+    let tenths = Math.floor(whole / unit);
+    while (tenths * unit > whole) tenths--;  // the division may round up: whole numbers only
+    if (tenths < 10000 || unit === 1e12) return `${String(Math.floor(tenths / 10)).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}.${tenths % 10} ${word}`;
+  }
+};
+function ago(epoch) {
+  const s = Date.now() / 1000 - epoch;
+  return s < 60 ? "just now" : `${span(s)} ago`;
+}
+function pagesSaid(p) {  // how the reader's pages came since the server started, and what's kept of them on disk
+  const asked = p.memory + p.disk + p.drawn, share = n => `${asked ? Math.round(100 * n / asked) : 0} %`;
+  const came = asked ? `${asked.toLocaleString()} asked for: ${share(p.memory)} from memory, ${share(p.disk)} from disk, ${share(p.drawn)} drawn then`
+    + (p.drawn ? ` (${(p.waited / p.drawn).toFixed(2)} s each on average)` : "") : "None asked for yet";
+  const ahead = !p.draw_ahead ? "None drawn ahead: <code>draw_ahead = 0</code>"
+    : `${p.ahead.toLocaleString()} drawn ahead, ${p.used.toLocaleString()} of them asked for later` + (p.battery ? "; none on battery" : "");
+  const widths = p.widths.length ? `. Widths asked for: ${p.widths.map(([w, n]) => `${w} (${share(n)})`).join(", ")}` : "";
+  const kept = p.problem ? `<span class="warn">Not kept on disk now: <code>cache_folder</code> ${esc(p.problem)}.</span>`
+    : `Kept on disk: ${sizeWords(p.disk_held)} of ${sizeWords(p.disk_limit)}, in <code>${esc(p.folder)}</code>`;
+  return `${came}.<div class="note">${ahead}. ${kept}${widths}. `
+    + `Settings under <code>[reader]</code>: <code>cache_gb</code>, <code>cache_folder</code>, <code>memory_mb</code>, <code>draw_ahead</code>.</div>`;
+}
+function pct(v) { return v < 0.01 ? "under 0.01 %" : `${v.toFixed(v < 1 ? 2 : 1)} %`; }
+
+function banner(text, kind = "") {  // changed only when it changes, so a refresh never takes Close away from a click
+  const b = $("banner"), cls = text ? `show ${kind}` : "";
+  if (b.className !== cls) b.className = cls;
+  if (b.dataset.was !== (text || "")) { b.innerHTML = text || ""; b.dataset.was = text || ""; }
+}
+// What a button says stays through the refreshes, in place of what they would say, until the next button press or a
+// click on its Close: a refusal, or the command to type, is there to be read.
+function say(text, kind = "") {
+  said = {text: `${text} <button class="small" data-unsay aria-label="Close this message">Close</button>`, kind};
+  banner(said.text, kind);
+}
+// Parts are replaced only when they change, so a refresh never pulls a control away from a click or the keyboard.
+function put(id, markup) { if ($(id).dataset.was !== markup) { $(id).innerHTML = markup; $(id).dataset.was = markup; } }
+function setState(text, cls) { put("state", `<span class="dot ${cls}"></span>${text}`); }
+function buttons(on) { $("restart").disabled = $("stop").disabled = !on; }
+
+function copyButton(text) {
+  return `<button class="small" data-copy="${esc(text)}">Copy</button>`;
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-copy]");
+  if (!t) return;
+  navigator.clipboard.writeText(t.dataset.copy).then(() => { t.textContent = "Copied"; setTimeout(() => t.textContent = "Copy", 1500); });
+});
+
+function render(s) {
+  // The server has started again since this page was opened, here or elsewhere: its buttons' key is another, so the
+  // page is fetched again, with the new one. Its process says so, with when it started: in a container the process
+  // may have the same number each time.
+  const now = `${s.pid} ${s.started}`;
+  if (first === null) first = now;
+  else if (now !== first) {
+    if (!leaving) location.reload();
+    return leaving = true;
+  }
+  last = s;
+  setState(`Running since ${when(s.started)} · ${span(s.uptime)}`, "up");
+  buttons(!busy);
+  if (!busy) said ? banner(said.text, said.kind)
+    : banner(s.updated ? "The program has changed since this server started. <b>Restart</b> to use the new version." : "", "warn");
+  // Started in a terminal with options of its own: a Restart brings it back in the background, with the settings
+  $("typed").hidden = !s.typed.length;
+  put("typed", s.typed.length ? `It was started with ${s.typed.map(t => `<code>${esc(t)}</code>`).join(", ")} for that run only. `
+    + `<b>Restart</b> brings it back in the background with the settings` + (s.restarted ? `, at <code>${esc(s.restarted)}</code>` : "")
+    + ` (<code>[server]</code> in the settings, or <code>library</code> and <code>rules</code> at their top).` : "");
+  put("behind", (s.behind || []).map(b => `<p class="note"><b>Worth updating:</b> ${esc(b.what)} ${esc(b.have)}, older than ${esc(b.want)}. ${esc(b.why)} ${esc(b.next)}</p>`).join(""));
+  $("pc_row").hidden = !s.here;  // its own address only to a browser on the server's own computer, as the server tells
+  put("pc", `<a href="${esc(s.pc)}">${esc(s.pc)}</a>`);
+  put("browser", s.browser
+    ? `<code>${esc(s.browser)}</code>${copyButton(s.browser)}<div class="note">The library page, on another device: open it in the browser.</div>`
+    : /^127\.|^::1$/.test(s.listen)
+    ? `<span class="empty">None: it listens on <code>${esc(s.listen)}</code>, the server's own computer only. Set <code>listen = "0.0.0.0"</code> under [server] in the settings for the home network, or <code>address</code> to the one a proxy gives, then Restart.</span>`
+    : `<span class="empty">None just now: the server's computer is on no network.</span>`);
+  put("opds", s.opds
+    ? `<code>${esc(s.opds)}</code>${copyButton(s.opds)}<div class="note">Your feed, the whole library, for a tablet's reading app: add it as an OPDS catalog, in full with ${esc(s.opds.split(":")[0])}://.</div>`
+    : `<span class="empty">None (see above).</span>`);
+  put("ereader", s.ereader
+    ? `<code>${esc(s.ereader)}</code>${copyButton(s.ereader)}<div class="note">Only books that suit an e-ink reader: ${s.ereader_titles.toLocaleString()} titles, each with its best file (rules under <code>[ereader_feed]</code> in the settings).</div>`
+    : `<span class="empty">None (see above).</span>`);
+  $("at_home_row").hidden = !s.at_home;  // with address set: the plain one too, for a device that can't use it
+  put("at_home", s.at_home
+    ? `<code>${esc(s.at_home)}</code>${copyButton(s.at_home)}<div class="note">Plain http, for a device that can't use the address above, such as an e-reader without Tailscale: its feed is <code>${esc(s.at_home)}ereader/opds</code>, with a name and password.</div>`
+    : "");
+  // Only said: a web page shouldn't write the system's start-up entries. The command does.
+  const turn = s.logon ? "off" : "on", how = s.system === "windows" ? "" : ", which prints what the system needs";
+  put("logon", s.service
+    ? `<span class="empty">With the computer: a system-wide service</span>`
+    : s.logon === null
+    ? `<span class="empty">Set up by your system (not built in here)</span>`
+    : `${s.logon ? "On" : "Off"}<div class="note">To turn it ${turn}: <code>hylly server autostart ${turn}</code>${how}.</div>`);
+  put("library", `<code>${esc(s.library)}</code>`);
+  $("catalog").textContent = s.library_gone ? "The library can't be reached right now"
+    : `${s.titles.toLocaleString()} titles` + (s.generated ? `, built ${when(s.generated)}` : "");
+  $("memory").textContent = `${Math.round(s.memory_mb)} MB (of ${Math.round(s.ram_gb)} GB)`;
+  $("cpu").textContent = `${pct(s.cpu_now)} now · ${pct(s.cpu_avg)} on average since it started`;
+  put("pages", pagesSaid(s.pages));
+  $("process").textContent = `${s.pid}, ` + (s.background ? "in the background" : "in a terminal window");
+  $("settings").textContent = s.settings;
+  // the device looking at this page, and the server's own computer: on it, the same one
+  const whose = c => c.you && c.server ? "This computer, " : c.you ? "This device, " : c.server ? "The server's computer, " : "";
+  put("devicelist", s.clients.length
+    ? `<table><thead><tr><th>Device</th><th>App</th><th class="num">Requests</th><th>Last</th></tr></thead><tbody>` +
+      s.clients.map(c => `<tr><td>${whose(c)}${esc(c.ip)}</td><td>${esc(c.app)}</td><td class="num">${c.n}</td><td>${ago(c.last)}</td></tr>`).join("") +
+      `</tbody></table><p class="note">${s.requests.toLocaleString()} request${s.requests === 1 ? "" : "s"} in all. The page's own checks are not counted.</p>`
+    : `<span class="empty">No requests yet.</span>`);
+  put("login", `Always needed · users: ${s.users.map(esc).join(", ")}`);  // an owner among them: the one looking at this
+  put("alarmlist", (s.bell_log.length ? `<pre>${esc(s.bell_log.join("\n"))}</pre>` : `<span class="empty">None yet.</span>`) +
+    `<p class="note">Wrong passwords for a real user, new devices, many downloads, changed users; and a daily summary. ` +
+    `They go to: ${s.bell_to.map(esc).join(", ")}. Settings under <code>[bell]</code>; <code>hylly bell test</code> sends a test. ` +
+    `All of them: <code>${esc(s.bell_log_file)}</code></p>`);
+  put("accesslist", s.access_log === null
+    ? `<span class="empty">Off (<code>access_log = false</code> in the settings).</span>`
+    : (s.access_log.length ? `<pre>${esc(s.access_log.join("\n"))}</pre>` : `<span class="empty">Nothing yet.</span>`) +
+      `<p class="note">The latest requests: address, user, time, request, result, size, app. All of them: <code>${esc(s.access_log_file)}</code></p>`);
+  put("log", (s.log.length ? `<pre>${esc(s.log.join("\n"))}</pre>` : `<span class="empty">None yet.</span>`)
+    + `<p class="note">All of them: <code>${esc(s.log_file)}</code>` + (s.background ? "" : ", and in its terminal window") + "</p>");
+}
+
+// A login that has ended (30 days unused, Log out, a new password): on to the login page, and back here after, as the
+// library page does. True when it has.
+function loggedOut(r) {
+  if (r.status !== 401) return false;
+  if (!leaving) location.assign("/login?" + new URLSearchParams({next: location.pathname}));
+  return leaving = true;
+}
+async function status() {
+  const r = await fetch("/server/status", {cache: "no-store"});
+  if (loggedOut(r) || !r.ok) throw new Error(r.status);
+  return r.json();
+}
+async function refresh() {
+  try { render(await status()); }
+  catch {
+    if (busy || leaving) return;
+    setState("Not answering", "down");
+    buttons(false);
+    banner("The server isn't answering. To start it, run <code>hylly serve --background</code>.", "bad");
+  }
+}
+// A key refused: the server may have started again since the last refresh. Then the page reloads (render), and true.
+async function restarted() {
+  try { render(await status()); } catch {}
+  return leaving;
+}
+async function post(path) {
+  const r = await fetch(path, {method: "POST", headers: {"X-Server-Key": KEY}});
+  if (loggedOut(r)) throw new Error("the login has ended");
+  if (r.status === 403 && await restarted()) throw new Error("the server has started again since: this page reloads");
+  const data = await r.json().catch(() => ({ok: false, error: `${r.status} ${r.statusText}`}));
+  if (!data.ok) throw Object.assign(new Error(data.error || "refused"), {status: r.status});
+  return data;
+}
+
+$("restart").onclick = async () => {
+  const before = last && last.pid;
+  busy = true; buttons(false);
+  say("Restarting… the page reloads when the server is back.");
+  try { await post("/server/restart"); }
+  catch (e) { busy = false; return say(`Restart failed: ${esc(e.message)}`, "bad"); }
+  const until = Date.now() + 40000;
+  const wait = async () => {
+    try { const s = await status(); if (s.pid !== before) return location.reload(); } catch {}
+    if (Date.now() > until) { busy = false; return say("It hasn't come back. The reason is at the end of server.log (see Messages, or run <code>hylly server status</code>).", "bad"); }
+    setTimeout(wait, 1000);
+  };
+  setTimeout(wait, 1500);
+};
+
+$("stop").onclick = async () => {
+  if (!confirm("Stop the library server? Tablets and e-readers can't reach the library until it is started again.")) return;
+  busy = true; buttons(false);
+  said = null;
+  try { await post("/server/stop"); }
+  catch (e) { busy = false; buttons(true); return say(`Stop failed: ${esc(e.message)}`, "bad"); }
+  clearInterval(timer);
+  setState("Stopped", "down");
+  if (last && last.service) return say("Stopped. To start it again: <code>sudo systemctl start hylly</code> on the server.");
+  say("Stopped. To start it again, run <code>hylly serve --background</code>. It also starts at the next logon if that is on.");
+};
+document.addEventListener("click", e => {
+  if (!e.target.closest("[data-unsay]")) return;
+  said = null;
+  if (last && !busy) render(last);
+  else banner("");
+});
+
+// A list drawn anew, always, empty too: put() leaves alone what it drew last, which a list just emptied would match.
+function draw(id, markup) { $(id).innerHTML = markup; $(id).dataset.was = markup; }
+// The questions the downloads left: each with its options as buttons, the rules' guess marked, answered as hylly decide does.
+const guessed = (q, n) => n === q.guess ? (q.held ? " · the guess, held back" : " · the guess") : "";
+const asking = (q, also = "") => `<b>${q.id}.</b> <b>${esc(q.title)}</b>${q.catalog_id ? ` <code>${esc(q.catalog_id)}</code>` : ""} · ${esc(q.ask)}`
+  + (q.why || also ? `<div class="why">${q.why ? `(${esc(q.why)})` : ""}${q.why && also ? " " : ""}${also}</div>` : "");
+async function questions() {
+  let d;
+  try {
+    const r = await fetch("/server/questions", {cache: "no-store"});
+    if (loggedOut(r) || !r.ok) return;
+    d = await r.json();
+  } catch { return; }
+  const items = (d.items || []).filter(q => !settled.has(q.id)), done = d.answered || [];
+  shownQuestions = new Map(items.map(q => [q.id, q]));
+  $("decidecount").textContent = items.length;  // on its tab: how many are open
+  $("decidecount").hidden = !items.length;
+  hasPart("decide", !(d.ok && !items.length && !done.length));  // none, or another computer's to answer (elsewhere): no tab
+  if (firstQuestions && items.length && !tabPicked) {  // no part in the address: the questions first
+    tabPicked = "decide";
+    settleTabs();
+  }
+  firstQuestions = false;
+  const option = (q, o, n) => `<button data-q="${q.id}" data-choice="${n + 1}" data-offered="${esc(q.offered)}"${n === q.guess ? ' class="guess"' : ""}>`
+    + (o.file ? (q.kind === "title" ? "Make it a title: " : "") + `${esc(o.file)} (${esc(String(o.format || "?").toUpperCase())}, ${sizeWords(o.size || 0)}`
+              + `${o.label && o.label.toLowerCase() !== String(o.format).toLowerCase() ? `, ${esc(o.label)}` : ""})` : esc(o.word))
+    + guessed(q, n) + `</button>`;
+  const shown = !d.ok ? `<span class="warn">${esc(d.error)}</span>` : items.map(q => `<div class="question">${asking(q)}`
+    + (q.kind === "same" ? sameButtons(q) : `<div class="options">${q.options.map((o, n) => option(q, o, n)).join("")}</div>`
+       + (COMPARED.has(q.kind) ? `<div class="options">${compareButton(q.id)}</div>` : "")) + `</div>`).join("");
+  draw("questions", shown);  // drawn again: a button left disabled by a refused answer is usable again, the last one gone
+  // the answered ones apart, each with its answer and a Take back: the same as hylly decide NUMBER auto
+  const said = q => { const o = q.options[(q.answer.option || 1) - 1] || {}; return o.file || o.word || ""; };
+  $("answeredbox").hidden = !done.length;
+  $("answeredn").textContent = done.length;
+  draw("answered", done.map(q => `<div class="question"><b>${q.id}.</b> <b>${esc(q.title)}</b>${q.catalog_id ? ` <code>${esc(q.catalog_id)}</code>` : ""} · ${esc(q.ask)}`
+    + `<div class="why">Answered: ${esc(said(q))} (${esc(q.answer.by || "")}, ${esc(String(q.answer.at || "").slice(0, 10))})</div>`
+    + `<div class="options"><button data-q="${q.id}" data-choice="auto">Take back</button></div></div>`).join(""));
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-choice]");
+  if (!b) return;
+  b.disabled = true;
+  $("decided").textContent = "";
+  try {
+    const r = await fetch("/server/decide", {method: "POST", headers: {"X-Server-Key": KEY, "Content-Type": "application/json"},
+                                           body: JSON.stringify({id: +b.dataset.q, choice: b.dataset.choice, ...(b.dataset.offered ? {offered: b.dataset.offered} : {})})});
+    if (loggedOut(r) || (r.status === 403 && await restarted())) return;
+    const data = await r.json().catch(() => ({ok: false, error: `${r.status} ${r.statusText}`}));
+    if (!data.ok) throw Object.assign(new Error(data.error || "refused"), {status: r.status});
+    $("decided").className = "note";
+    $("decided").textContent = data.took_back ? `Took back the answer to question ${b.dataset.q}: the next run or build asks again where the rules are still unsure.`
+                                              : `Answered question ${b.dataset.q}: this ${data.did}.`;
+  } catch (x) {  // it stays until the next answer or a reload: the status's refresh doesn't take it away
+    $("decided").className = "note warn";
+    $("decided").textContent = `The answer wasn't kept: ${x.message}`;
+  }
+  closeCompare(true);  // answered from Compare: back to the list, which says how it went
+  await questions();
+  toStatus("decided");
+});
+
+// Compare: one question's files side by side (/server/compare) in a dialog the size of the window, one question at a
+// time, the list behind it as it was: what each file is, and the same page of each, the same way through the files,
+// turned together (◀ ▶, the slider, ← and →), with a corner magnified where a click on either page says. Right under
+// each page, the answer that keeps that file: Keep only this one of two copies (/server/remove, below), Keep this file
+// of a title's files (its option, through /server/decide); at the bottom, for two copies, Keep both and Remove both….
+const COMPARED = new Set(["same", "which-file"]);
+let shownQuestions = new Map();  // the open questions as To decide last drew them, by number
+const compares = new Map();  // question number -> {q, data, cols, at: how far through (0 to 1), fx, fy: the magnified spot, ratio: each side's page's shape}
+let comparing = null;  // the question the dialog shows, while it's open
+let widths = null;  // the widths the server draws pages at (/api/session): a page asked for at one of them has the same
+                    // address in a window a little larger or smaller, which the browser has already
+const compareButton = id => `<button type="button" id="cmpbtn${id}" data-compare="${id}" aria-haspopup="dialog">Compare the files</button>`;
+const pageUrl = (s, n, w) => `/api/page?id=${encodeURIComponent(s.id)}&n=${n}&w=${w}${s.reads === "book" ? "&book=1" : ""}&v=${encodeURIComponent(s.v || "")}`;
+const drawable = d => d.sides.filter(s => s.reads && s.pages);
+const most = d => Math.max(1, ...drawable(d).map(s => s.pages));
+const nth = (c, s) => Math.round(c.at * (s.pages - 1));
+const BIG = 2400;  // the magnified page's width: a comic's own pages up to it, a PDF or e-book drawn at it
+const SHAPE = 0.7;  // a page's width to its height, about, until its picture has come
+
+// The dialog's columns: a file the library has (side), or one the shop lists that wasn't downloaded (listed); each with
+// the answer under it: for two copies, the one to keep (keep: left or right, only while both are shown); for a title's
+// files, its option (choice). /server/compare gives a which-file question's files in its options' order, each a side
+// or listed.
+function columns(q, d) {
+  if (q.kind === "same") return d.sides.map((side, n) => ({side, keep: d.sides.length === 2 ? ["left", "right"][n] : ""}));
+  const sides = [...d.sides], listed = [...(d.listed || [])], cols = [], is = (a, b) => (a ?? null) === (b ?? null);
+  q.options.forEach((o, n) => {
+    if (!o || !o.file) return;
+    const l = listed[0];
+    if (l && l.file === o.file && is(l.format, o.format) && is(l.size, o.size)) cols.push({listed: listed.shift(), choice: n});
+    else if (sides.length) cols.push({side: sides.shift(), choice: n});
+  });
+  return [...cols, ...sides.map(side => ({side})), ...listed.map(l => ({listed: l}))];
+}
+async function serverWidths() {
+  if (widths !== null) return;
+  widths = [];
+  try { const s = await fetch("/api/session", {cache: "no-store"}).then(r => r.json()); if (Array.isArray(s.widths)) widths = s.widths; } catch {}
+}
+async function openCompare(id) {
+  const q = shownQuestions.get(id);
+  if (!q || $("compare").open) return;
+  const c = compares.get(id) || {data: null, at: 0, fx: 0.5, fy: 0.4, settled: false, turned: false, ratio: []};
+  compares.set(id, c);
+  c.q = q;  // as the list showed it: what its answers send (offered)
+  comparing = id;
+  $("cmpasked").innerHTML = asking(q);
+  $("cmpsides").innerHTML = `<p class="note">Reading the files…</p>`;
+  $("cmpbottom").innerHTML = "";
+  $("compare").showModal();
+  if (!c.data) {
+    if (c.loading) return;
+    c.loading = true;
+    try {
+      const r = await fetch(`/server/compare?q=${id}`, {cache: "no-store"});
+      if (loggedOut(r)) return;
+      const d = await r.json();
+      if (!d.ok) throw new Error(d.error || r.statusText);
+      await Promise.all([serverWidths(), ...d.sides.map(async s => {  // how many pages each has, and the version its pages' addresses carry
+        if (!s.reads) return;
+        const p = await fetch(`/api/pages?id=${encodeURIComponent(s.id)}${s.reads === "book" ? "&book=1" : ""}`).then(x => x.json()).catch(() => ({}));
+        s.pages = p.ok ? p.pages : 0;
+        s.v = p.v || "";
+      })]);
+      c.data = d;
+    } catch (x) {
+      if (comparing === id) $("cmpsides").innerHTML = `<p class="note warn">The files can't be compared just now: ${esc(x.message)}</p>`;
+      return;
+    } finally { c.loading = false; }
+    const pages = most(c.data);
+    c.at = pages >= 10 ? 0.1 : pages > 1 ? 1 / (pages - 1) : 0;  // past the cover and the first pages, the same way through each
+  }
+  if (comparing !== id) return;  // closed meanwhile
+  drawCompare(c);
+  if (c.settled || c.settling) return showPages(c);
+  c.settling = true;
+  for (let tries = 0, pages = most(c.data); tries < 6 && comparing === id && !c.turned; tries++) {  // an empty or plain page there is passed over on both
+    showPages(c);
+    const empty = await Promise.all(c.cols.map((k, i) => k.side && k.side.reads && k.side.pages ? plain($(`cmppage${i}`)) : false));
+    if (!empty.some(Boolean) || c.at >= 1 || c.turned || comparing !== id) break;
+    c.at = Math.min(1, c.at + 1 / Math.max(1, pages - 1));
+  }
+  c.settling = false;
+  if (comparing !== id) return;
+  c.settled = true;
+  if (!c.turned) showPages(c);  // now with the magnified corner
+}
+// The dialog drawn for its question: the question at the top; a column for each file, what it is, then its page, then
+// the answer that keeps it; at the bottom the turning, and for two copies Keep both and Remove both….
+function drawCompare(c) {
+  const q = c.q, d = c.data, pages = most(d), same = q.kind === "same", offered = esc(q.offered);
+  c.cols = columns(q, d);
+  const col = (k, i) => {
+    const s = k.side, l = k.listed, it = s || l, other = s && d.sides.find(o => o !== s), shows = s && s.reads && s.pages, hints = [];
+    if (other && s.pages && other.pages && s.reads === other.reads && s.pages < 0.6 * other.pages)
+      hints.push("far fewer pages than the other: a sample, or a preview?");
+    if (other && s.size && other.size && s.size >= 1.5 * other.size) hints.push(`${(s.size / other.size).toFixed(1)} times the other's size`);
+    if (other && s.language && other.language && s.language !== other.language) hints.push("another language than the other");
+    const facts = `<div class="cmp-facts">${s && s.cover ? `<img class="cmp-cover" src="${esc(s.cover)}" alt="">` : ""}<div>`
+      + `<b id="cmpname${i}">${esc(s ? s.name : l.file)}</b><span class="cmp-line cmp-what">${esc(String(it.format || "?").toUpperCase())} · ${sizeWords(it.size || 0)}`
+      + (s ? (s.date ? ` · ${esc(s.date)}` : "") + (s.language ? ` · ${esc(s.language)}` : "") : l.label ? ` · ${esc(l.label)}` : "") + `</span>`
+      + (shows ? `<span class="cmp-line cmp-at" id="cmpat${i}"></span>` : "")
+      + (same && s.files > 1 ? `<span class="cmp-line">Its card has ${s.files} files: a removal takes them all.</span>` : "")
+      + hints.map(h => `<span class="cmp-line warn">${esc(h)}</span>`).join("") + `</div></div>`;
+    const stage = shows ? `<div class="cmp-stage" id="cmpstage${i}"><div class="cmp-pagebox" id="cmpbox${i}">`
+        + `<img class="cmp-page" id="cmppage${i}" data-side="${i}" alt=""><div class="cmp-inset" id="cmpinset${i}" aria-hidden="true" hidden></div></div></div>`
+      : `<div class="cmp-stage"><p class="why">${l ? "Not downloaded: only what the shop lists of it." : "Its pages can't be shown here."}</p></div>`;
+    const keep = k.keep ? `<button class="keep" data-q="${q.id}" data-remove="${k.keep}" data-offered="${offered}" aria-describedby="cmpname${i}">Keep only this one</button>`
+      : k.choice !== undefined ? `<button class="keep" data-q="${q.id}" data-choice="${k.choice + 1}" data-offered="${offered}" aria-describedby="cmpname${i}">`
+        + `Keep this file${guessed(q, k.choice)}</button>` : "";
+    return facts + stage + `<div class="cmp-keep">${keep}</div>`;
+  };
+  $("cmpasked").innerHTML = asking(q, !drawable(d).length ? "" : `Click a page to magnify that spot on each${pages > 1 ? "; ← and → turn the pages" : ""}.`)
+    + (d.unshown ? `<p class="note">${d.unshown === 1 ? "A copy isn't" : `${d.unshown} copies aren't`} a card of `
+       + `${d.unshown === 1 ? "its" : "their"} own in the catalog just now (gone, or one with the other since the last build): nothing of it to show.</p>` : "");
+  $("cmpsides").innerHTML = c.cols.map(col).join("") || `<p class="note">None of these files is in the library to show.</p>`;
+  $("cmpbottom").innerHTML = (pages > 1 && drawable(d).length ? `<div class="cmp-turn"><button type="button" data-turn="-1" aria-label="An earlier page">◀</button>`
+       + `<input type="range" id="cmpslide" min="0" max="${pages - 1}" value="${Math.round(c.at * (pages - 1))}" data-slide aria-label="How far through the files">`
+       + `<button type="button" data-turn="1" aria-label="A later page">▶</button></div>` : "")
+    + (same ? `<div class="cmp-both">${keepBoth(q, "keep")}`
+       + (d.sides.length === 2 ? `<button data-q="${q.id}" data-remove="none" data-offered="${offered}">Remove both…</button>` : "") + `</div>` : "");
+  fitAll(c);
+}
+// Each page as large as its place in its column lets it, by its own shape: never cropped, never scrolled. Then the pages'
+// row as tall as the tallest of them, the room left over above and below it all: on a narrow screen, what a file is and
+// the answer that keeps it stay right above and below its page.
+function fitAll(c) {
+  const grid = $("cmpsides");
+  if (!grid || !grid.style || !c.cols) return;
+  grid.style.gridTemplateRows = "";  // all the room there is, first
+  c.cols.forEach((k, i) => fit(c, i));
+  const tallest = Math.max(0, ...c.cols.map((k, i) => parseFloat(($(`cmpbox${i}`) || {style: {}}).style.height) || 0));
+  if (tallest) grid.style.gridTemplateRows = `auto ${tallest}px auto`;
+}
+function fit(c, i) {
+  const stage = $(`cmpstage${i}`), box = $(`cmpbox${i}`), inset = $(`cmpinset${i}`);
+  if (!stage || !box || !box.style) return;
+  const r = c.ratio[i] || SHAPE, w = stage.clientWidth || 0, h = stage.clientHeight || 0;
+  const bw = Math.floor(Math.min(w, h * r)), bh = Math.floor(Math.min(h, w / r));
+  box.style.width = `${bw}px`;
+  box.style.height = `${bh}px`;
+  if (inset && inset.style) inset.style.width = `${Math.round(Math.min(bw, bh) * 0.45)}px`;
+}
+function widthFor(c, i) {  // what a page is asked for at: its width as shown in the screen's own pixels, as the server draws one
+  const box = $(`cmpbox${i}`), shown = (box && box.offsetWidth) || 600;
+  const want = Math.ceil(shown * (window.devicePixelRatio || 1));
+  return widths && widths.length ? widths.find(w => w >= want) || widths[widths.length - 1] : want;
+}
+// Each side's page at c.at, its words and the slider: a page is asked for only when it's another, and nothing is drawn
+// anew, so the keyboard's place stays where it is.
+function showPages(c) {
+  if (compares.get(comparing) !== c || !c.cols) return;
+  const pages = most(c.data);
+  c.cols.forEach((k, i) => {
+    const s = k.side, img = $(`cmppage${i}`);
+    if (!s || !s.reads || !s.pages || !img) return;
+    const n = nth(c, s), url = pageUrl(s, n, widthFor(c, i)), inset = $(`cmpinset${i}`);
+    if (img.dataset.url !== url) {
+      if (inset && (img.dataset.url || "").replace(/&w=\d+/, "") !== url.replace(/&w=\d+/, "")) inset.hidden = true;  // another page
+      img.dataset.url = url;
+      img.src = url;
+    }
+    img.alt = `Page ${n + 1} of ${s.name}`;
+    $(`cmpat${i}`).textContent = `Page ${n + 1} of ${s.reads === "book" ? "about " : ""}${s.pages}${s.reads === "book" ? ", as drawn here" : ""}`;
+  });
+  const slide = $("cmpslide");
+  if (slide) slide.value = String(Math.round(c.at * (pages - 1)));
+  clearTimeout(c.wait);
+  if (c.settled) c.wait = setTimeout(() => c.cols.forEach((k, i) => magnify(c, i)), 400);  // once it rests on a page
+}
+function magnify(c, i) {  // the page again, large, behind the corner: shown once it has come, never an empty box
+  const img = $(`cmppage${i}`), inset = $(`cmpinset${i}`);
+  if (!img || !inset || !img.dataset.url || !img.isConnected) return;
+  const big = new Image();
+  inset.big = big;
+  big.onload = () => { if (inset.big === big && img.isConnected) { inset.hidden = false; place(c, inset); } };
+  big.src = img.dataset.url.replace(/&w=\d+/, `&w=${BIG}`);
+}
+function place(c, inset) {
+  const big = inset.big, w = inset.clientWidth, h = inset.clientHeight;
+  if (!big || !big.complete || !big.naturalWidth || inset.hidden) return;
+  inset.classList.toggle("top", c.fy > 0.55);  // never over the spot it shows
+  inset.classList.toggle("left", c.fx > 0.55);
+  inset.style.backgroundImage = `url("${big.src}")`;
+  inset.style.backgroundSize = `${big.naturalWidth}px ${big.naturalHeight}px`;
+  inset.style.backgroundPosition = `${Math.round(w / 2 - c.fx * big.naturalWidth)}px ${Math.round(h / 2 - c.fy * big.naturalHeight)}px`;
+}
+const plain = img => new Promise(done => {  // empty or one colour (a blank page, a scanner's black one): little to tell apart
+  const look = () => {
+    try {
+      const k = document.createElement("canvas"), g = k.getContext("2d");
+      k.width = 120; k.height = 160;
+      g.drawImage(img, 0, 0, 120, 160);
+      const px = g.getImageData(0, 0, 120, 160).data;
+      let sum = 0, sq = 0;
+      for (let i = 0; i < px.length; i += 4) { const y = 0.3 * px[i] + 0.59 * px[i + 1] + 0.11 * px[i + 2]; sum += y; sq += y * y; }
+      const n = px.length / 4, mean = sum / n;
+      done(Math.sqrt(Math.max(0, sq / n - mean * mean)) < 5);
+    } catch { done(false); }
+  };
+  if (img.complete && img.naturalWidth) look();
+  else { img.addEventListener("load", look, {once: true}); img.addEventListener("error", () => done(false), {once: true}); }
+});
+const turnTo = (c, at) => { c.turned = c.settled = true; c.at = Math.min(1, Math.max(0, at)); showPages(c); };
+const turnBy = (c, step) => turnTo(c, c.at + step / Math.max(1, most(c.data) - 1));
+// Closed by ×, Esc or an answer: the keyboard's place back on its Compare the files, or, after an answer, left to what
+// the answer said. A browser tells of a close only at its next frame: the dialog's own open is what counts.
+function closed(answered) {
+  const id = comparing, c = compares.get(id);
+  comparing = null;
+  if (c) clearTimeout(c.wait);
+  if (!answered) toStatus(`cmpbtn${id}`);
+}
+function closeCompare(answered) {
+  if (comparing === null) return;
+  $("compare").close();
+  closed(answered);
+}
+$("compare").oncancel = e => { e.preventDefault(); closeCompare(false); };  // Esc: closed here, at once
+$("compare").onclose = () => { if (comparing !== null && !$("compare").open) closed(false); };  // or by the browser
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-compare]"), step = e.target.closest("[data-turn]"), page = e.target.closest(".cmp-page");
+  if (b) return openCompare(+b.dataset.compare);
+  if (e.target.closest("[data-cmpclose]")) return closeCompare(false);
+  const c = compares.get(comparing);
+  if (!c || !c.data) return;
+  if (step) return turnBy(c, Number(step.dataset.turn));
+  if (!page) return;
+  const at = page.getBoundingClientRect();  // the spot clicked, magnified on each side
+  c.fx = Math.min(1, Math.max(0, (e.clientX - at.left) / at.width));
+  c.fy = Math.min(1, Math.max(0, (e.clientY - at.top) / at.height));
+  c.cols.forEach((k, i) => { const inset = $(`cmpinset${i}`); if (inset) place(c, inset); });
+});
+document.addEventListener("change", e => {
+  const s = e.target.closest && e.target.closest("[data-slide]"), c = compares.get(comparing);
+  if (s && c && c.data) turnTo(c, Number(s.value) / Math.max(1, most(c.data) - 1));
+});
+document.addEventListener("keydown", e => {  // ← and → turn both, the keyboard's place staying where it is; the slider steps by itself
+  if (comparing === null || !$("compare").open || (e.key !== "ArrowLeft" && e.key !== "ArrowRight") || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+  const c = compares.get(comparing);
+  if (!c || !c.data || (e.target && e.target.type === "range") || $("removeboth").open) return;
+  e.preventDefault();
+  turnBy(c, e.key === "ArrowLeft" ? -1 : 1);
+});
+document.addEventListener("load", e => {  // a page has come: its shape is known, so it's fitted, and asked for wider if it shows wider
+  const img = e.target, c = compares.get(comparing);
+  if (!c || !c.cols || !img || !img.classList || !img.classList.contains("cmp-page") || !img.naturalWidth) return;
+  c.ratio[+img.dataset.side] = img.naturalWidth / img.naturalHeight;
+  fitAll(c);
+  showPages(c);
+}, true);  // a load doesn't bubble: caught on its way down
+let refit = 0;
+window.addEventListener("resize", () => {  // the window's new size: each page fitted again, and asked for at its new width
+  clearTimeout(refit);
+  refit = setTimeout(() => {
+    const c = compares.get(comparing);
+    if (!c || !c.cols) return;
+    fitAll(c);
+    showPages(c);
+    c.cols.forEach((k, i) => { const inset = $(`cmpinset${i}`); if (inset) place(c, inset); });
+  }, 150);
+});
+
+// Two copies that may be one book: Keep both is the answer Two books (apart), through /server/decide as any answer;
+// Keep only this one, under a copy's page in Compare, and Remove both move the other card's files, or both's, into
+// _Removed (/server/remove: keep left, right or none, the copies as Compare shows them, left to right), Remove both once
+// its question is answered.
+const unquoted = s => { try { return decodeURIComponent(s || ""); } catch { return String(s || ""); } };
+function keepBoth(q, cls = "") {
+  const apart = q.options.findIndex(o => o.answer === "apart"), n = apart < 0 ? q.guess : apart;
+  const classes = [cls, n === q.guess ? "guess" : ""].filter(Boolean).join(" ");
+  return `<button data-q="${q.id}" data-choice="${n + 1}" data-offered="${esc(q.offered)}"${classes ? ` class="${classes}"` : ""}>Keep both${guessed(q, n)}</button>`;
+}
+function sameButtons(q) {  // in the list: Keep both, and Compare the files, where the other answers are
+  const [left, right] = q.subjects || [];
+  return (left && right ? `<div class="why">The copies: <code>${esc(unquoted(left.f))}</code> and <code>${esc(unquoted(right.f))}</code></div>` : "")
+    + `<div class="options">${keepBoth(q)}${compareButton(q.id)}</div>`;
+}
+function bothGo(q) {
+  const [left, right] = (q && q.subjects) || [];
+  return `<p>Every file of both cards goes${left && right ? `: the left one's, <code>${esc(unquoted(left.f))}</code>, and the `
+    + `right one's, <code>${esc(unquoted(right.f))}</code>, with any other files each card has` : ""}.</p>`;
+}
+// A dialog's question: true for its own button, false for Cancel or Esc.
+function asked(id, text) {
+  const d = $(id);
+  d.querySelector(".asked").innerHTML = text;
+  d.returnValue = "";
+  return new Promise(done => { d.addEventListener("close", () => done(d.returnValue === "ok"), {once: true}); d.showModal(); });
+}
+// One of To decide's and Removed's changes, with the page's key: what the server said; null for a login that has ended,
+// or a server started again since (the page goes on to the login page, or reloads).
+async function send(path, body) {
+  const r = await fetch(path, {method: "POST", headers: {"X-Server-Key": KEY, "Content-Type": "application/json"}, body: JSON.stringify(body)});
+  if (loggedOut(r) || (r.status === 403 && await restarted())) return null;
+  const data = await r.json().catch(() => ({ok: false, error: `${r.status} ${r.statusText}`}));
+  if (!data.ok) throw Object.assign(new Error(data.error || "refused"), {status: r.status});
+  return data;
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-remove]");
+  if (!b) return;
+  if (b.dataset.remove === "none" && !await asked("removeboth", bothGo(shownQuestions.get(+b.dataset.q)))) return;
+  b.disabled = true;
+  $("decided").textContent = "";
+  try {
+    const data = await send("/server/remove", {id: +b.dataset.q, keep: b.dataset.remove, offered: b.dataset.offered});
+    if (!data) return;
+    settled.add(+b.dataset.q);
+    $("decided").className = "note";
+    $("decided").textContent = `Question ${b.dataset.q}: ${data.did}`;
+  } catch (x) {
+    if (x.status === 404) {  // settled already, as by this page a moment ago: no longer offered, and said so plainly
+      settled.add(+b.dataset.q);
+      $("decided").className = "note";
+      $("decided").textContent = `Question ${b.dataset.q} is settled already.`;
+    } else {
+      $("decided").className = "note warn";
+      $("decided").textContent = `Question ${b.dataset.q}: ${x.message}`;
+    }
+  }
+  closeCompare(true);
+  await Promise.all([questions(), removedList()]);
+  toStatus("decided");
+});
+// Once the lists are drawn again, the button pressed has gone with them: the keyboard's place goes to what the answer
+// said, never to the page's top.
+// Never scrolled to: a note stands fixed near the top (NOTED_MS, then it goes), a button is where the list has it.
+const NOTED_MS = 8000;
+const toStatus = id => {
+  const el = $(id);
+  if (el && typeof el.focus === "function") el.focus({preventScroll: true});
+  if (el && (id === "decided" || id === "removedsaid")) {
+    clearTimeout(noted[id]);
+    noted[id] = setTimeout(() => { if ($(id) === el) el.textContent = ""; }, NOTED_MS);
+  }
+};
+const noted = {};
+// Questions settled on this page (a removal): not shown again while the build that drops them runs.
+const settled = new Set();
+
+// Removed: what _Removed holds (/server/removed), shown only when it holds something, each file with Put back; and
+// Empty _Removed, once its question is answered, which sends what the list showed, so other files there aren't deleted.
+let removedShown = null;  // what the list last showed: how many files, their size, how many put there by hand, its digest
+async function removedList() {
+  let d;
+  try {
+    const r = await fetch("/server/removed", {cache: "no-store"});
+    if (loggedOut(r) || !r.ok) return;
+    d = await r.json();
+  } catch { return; }
+  const files = d.files || [], count = d.count || 0;
+  removedShown = d.ok && count ? {files: count, bytes: d.bytes || 0, by_hand: d.by_hand || 0, digest: d.digest} : null;
+  hasPart("removed", !(d.ok && !count) || !!$("removedsaid").textContent);  // while it says what became of the last ones too
+  draw("removedlist", !d.ok ? `<span class="warn">${esc(d.error)}</span>` : !count ? "" :
+    `<p>${count.toLocaleString()} file${count === 1 ? "" : "s"}, ${sizeWords(d.bytes || 0)}${d.more ? ", and more than could be counted" : ""}.</p>`
+    + `<table><thead><tr><th>File</th><th class="num">Size</th><th>Removed</th><th></th></tr></thead><tbody>`
+    + files.map(f => `<tr><td><code>${esc(f.path)}</code>${f.held !== f.path ? `<div class="note">In ${esc(d.folder)} as <code>${esc(f.held)}</code></div>` : ""}</td>`
+      + `<td class="num">${sizeWords(f.size || 0)}</td><td>${f.at ? esc(when(f.at)) : "put there by hand"}</td>`
+      + `<td><button class="small" data-putback="${esc(f.held)}">Put back</button></td></tr>`).join("")
+    + `</tbody></table>` + (files.length < count ? `<p class="note">The latest ${files.length.toLocaleString()} are listed.</p>` : "")
+    + `<div class="options"><button data-empty>Empty ${esc(d.folder)}…</button></div>`);
+}
+document.addEventListener("click", async e => {
+  const back = e.target.closest("[data-putback]"), all = e.target.closest("[data-empty]"), b = back || all;
+  if (!b) return;
+  const shown = removedShown, files = n => `${n.toLocaleString()} file${n === 1 ? "" : "s"}`;
+  const byHand = !shown || !shown.by_hand ? "" : ` Of them, ${files(shown.by_hand)} ${shown.by_hand === 1 ? "was" : "were"} put `
+    + `there by hand, not removed on this page: ${shown.by_hand === 1 ? "it goes" : "they go"} too.`;
+  if (all && !(shown && await asked("emptyremoved", `<p>${files(shown.files)}, ${sizeWords(shown.bytes)}, are deleted for good, `
+                                                    + `and that space is free again.${byHand}</p>`))) return;
+  b.disabled = true;
+  $("removedsaid").textContent = "";
+  try {
+    const data = await send(back ? "/server/put-back" : "/server/empty-removed", back ? {held: back.dataset.putback} : {digest: shown.digest});
+    if (!data) return;
+    $("removedsaid").className = "note";
+    $("removedsaid").textContent = data.did;
+  } catch (x) {
+    $("removedsaid").className = "note warn";
+    $("removedsaid").textContent = `${back ? "Not put back" : "Not emptied"}: ${x.message}`;
+  }
+  await Promise.all([removedList(), back ? questions() : null]);
+  toStatus("removedsaid");
+});
+
+// The page's parts as tabs (role tablist, tab and tabpanel, as WAI-ARIA's pattern has them), one shown at a time, the
+// bar staying at the top: To decide and Removed have a tab only while they hold anything. The part shown is the one the
+// address names (#decide, as the library page's links have it), or the one picked, kept in the address; with none,
+// To decide when it has questions, else How it runs. A part drawn again never moves the page to another.
+const TABS = ["decide", "removed", "addresses", "running", "devices", "alarms", "access", "messages"];
+let tabPicked = TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : null, tabShown = null, firstQuestions = true;
+const tabThere = id => !!id && TABS.includes(id) && !$(`tab-${id}`).hidden;
+function showTab(id, focus = false) {
+  tabShown = id;
+  for (const part of TABS) {
+    const tab = $(`tab-${part}`), on = part === id;
+    tab.setAttribute("aria-selected", String(on));
+    tab.tabIndex = on ? 0 : -1;  // the keyboard comes to the bar on the tab shown, and goes along it by the arrows
+    $(part).hidden = !on;
+  }
+  const bar = $("tabs"), tab = $(`tab-${id}`);  // in a bar scrolled sideways, the tab shown in view
+  if (tab.offsetLeft < bar.scrollLeft) bar.scrollLeft = tab.offsetLeft - 16;
+  else if (tab.offsetLeft + tab.offsetWidth > bar.scrollLeft + bar.clientWidth) bar.scrollLeft = tab.offsetLeft + tab.offsetWidth - bar.clientWidth + 16;
+  if (focus) tab.focus();
+}
+function settleTabs() {  // the part picked, else the one shown, else How it runs
+  const id = [tabPicked, tabShown, "running"].find(tabThere);
+  if (id !== tabShown) showTab(id);
+}
+function hasPart(id, has) {  // To decide and Removed: a tab only while they have something
+  if ($(`tab-${id}`).hidden !== !has) $(`tab-${id}`).hidden = !has;
+  settleTabs();
+}
+function pickTab(id, focus = false) {
+  tabPicked = id;
+  if (location.hash !== `#${id}`) history.replaceState(null, "", `#${id}`);  // in the address, without a jump or a step back
+  showTab(id, focus);
+  const panel = $(id), bar = $("tabs");  // picked with the page scrolled past its start: the part from its own start
+  if (panel.getBoundingClientRect && panel.getBoundingClientRect().top < bar.getBoundingClientRect().bottom) panel.scrollIntoView({block: "start"});
+}
+document.addEventListener("click", e => {
+  const tab = e.target.closest('[role="tab"]');
+  if (tab) pickTab(tab.id.slice(4));
+});
+document.addEventListener("keydown", e => {  // ← and → along the tabs, Home and End to the first and last, each shown as it comes
+  const tab = e.target && e.target.closest && e.target.closest('[role="tab"]');
+  if (!tab || e.altKey || e.ctrlKey || e.metaKey || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+  const there = TABS.filter(tabThere), at = there.indexOf(tab.id.slice(4));
+  const to = {ArrowLeft: at - 1, ArrowRight: at + 1, Home: 0, End: there.length - 1}[e.key];
+  e.preventDefault();
+  pickTab(there[(to + there.length) % there.length], true);
+});
+window.addEventListener("hashchange", () => {  // a link to one of them, on this page
+  if (TABS.includes(location.hash.slice(1))) { tabPicked = location.hash.slice(1); settleTabs(); }
+});
+settleTabs();
+
+refresh();
+questions();
+removedList();
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { questions(); removedList(); } });
+timer = setInterval(() => { if (!document.hidden) refresh(); }, 5000);  // not for a tab nobody is looking at
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
+</script>
+</body>
+</html>

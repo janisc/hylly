@@ -1,0 +1,21 @@
+name: audit
+# The published flaws in what uv.lock installs: weekly, as flaws get found in what hasn't changed, and on any change to it.
+# How Hylly is kept up to date as a whole: src/hylly/updates.py.
+on:
+  schedule:
+    - cron: "23 5 * * 1"
+  workflow_dispatch:
+  push:
+    paths: ["pyproject.toml", "uv.lock", ".github/workflows/audit.yml"]
+  pull_request:
+    paths: ["pyproject.toml", "uv.lock", ".github/workflows/audit.yml"]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv export --frozen --no-dev --no-emit-project --no-hashes --format requirements-txt -o requirements.txt
+      - run: uvx pip-audit==2.10.1 -r requirements.txt --no-deps --disable-pip --strict

@@ -1,0 +1,82 @@
+[project]
+name = "hylly"
+version = "0.1.0"
+description = "Hylly: a home library for the e-books and comics you own: downloads, catalog, reader and server"
+readme = "README.md"
+requires-python = ">=3.11"  # tomllib
+authors = [{ name = "janisc", email = "1122039+janisc@users.noreply.github.com" }]
+classifiers = [
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Topic :: Multimedia",
+    "Environment :: Web Environment",
+]
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE", "THIRD-PARTY-NOTICES.md", "src/hylly/foliate/LICENSE", "src/hylly/foliate/vendor/LICENSE-*.txt",
+                 "src/hylly/fonts/OFL-*.txt", "src/hylly/LICENSE-*.txt"]
+dependencies = [
+    "httpx>=0.28",
+    "pillow>=13.0",  # reads pictures out of books and comics: updates.py warns of an older one
+    "psutil>=5.9",
+    "pymupdf>=2.1",  # MuPDF 1.28.6: fixes CVE-2026-3308 (a PDF image writing past its memory) and many crashes; updates.py too
+    "rarfile>=4.5",
+]
+
+[project.urls]
+Homepage = "https://github.com/janisc/hylly"
+
+[project.scripts]
+hylly = "hylly.cli:main"        # every command (docs/architecture.md)
+hyllyd = "hylly.daemon:main"    # the library server itself, and only that: what hylly serve and a service start
+
+[tool.uv]
+# Floors for what the requirements above bring along: request smuggling in h11 (CVE-2025-43859), roots no longer to be
+# trusted in certifi (CVE-2024-39689), a name that takes forever to check in idna (CVE-2024-3651).
+constraint-dependencies = ["h11>=0.16", "certifi>=2024.7.4", "idna>=3.7"]
+# PyMuPDF 2.x lists its document-AI add-ons as requirements (onnxruntime, numpy, a layout model and their own);
+# Hylly uses none of them, and leaving them out keeps a few hundred MB of native code off every install.
+# uv tool install doesn't read this: tool-overrides.txt says the same to it (a test keeps them alike).
+override-dependencies = [
+    "pymupdf-layout; sys_platform == 'never'",
+    "pymupdf4llm; sys_platform == 'never'",
+    "onnxruntime; sys_platform == 'never'",
+    "numpy; sys_platform == 'never'",
+    "networkx; sys_platform == 'never'",
+    "pyyaml; sys_platform == 'never'",
+    "tabulate; sys_platform == 'never'",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.17.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hylly"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# A test still going after five minutes has the stack of every thread written out, by pytest's own faulthandler: a
+# hang shows where it is, long before the workflow's timeout-minutes ends the run. Far past the slowest test there is,
+# a few seconds, so that a test that is only slow, on a busy computer, is never taken for a hang.
+faulthandler_timeout = 300
+# The tests that take about three seconds or more on a laptop (a process started and waited for, a race of processes,
+# a hang waited out): uv run pytest -m "not slow" leaves them out, for a quicker answer while working. CI runs them all.
+markers = ["slow: takes about three seconds or more on a laptop; -m \"not slow\" leaves it out"]
+
+[tool.ruff]
+# The lines are written to 120 characters, some longer where a message or a table's row reads better whole; no
+# formatter is run over the code (docs/architecture.md, Adding to it)
+line-length = 120
+
+[tool.ruff.lint]
+# ruff's long-standing rules (E4, E7, E9, F), and two more the code keeps: no except Exception that swallows what it
+# catches without a # noqa saying why, and functions named in small letters (http.server's do_GET has a # noqa). Named
+# whole, not added to ruff's defaults, which newer ruffs widen
+select = ["E4", "E7", "E9", "F", "BLE", "N802"]

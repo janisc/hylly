@@ -1,0 +1,52 @@
+# The shops' downloads, once: hylly download, every shop you have a login for, one after another, into the library.
+# hylly-download.timer starts it every night, before hylly-lookup.timer, which adds what came to the library page, and
+# hylly-backup.timer. The help tells more ("After buying something", "On a timer").
+#
+# It goes on its own: a login that has expired ends that shop's run with a note to your phone (secrets/ntfy-url), to log
+# in again by hand with hylly login, and the unit then counts as failed (systemctl --failed). hylly download --dry-run,
+# at a terminal, shows first what it would download.
+#
+# Run it on the computer that has the library. On one that reaches the server over ssh ([remote] ssh in its settings),
+# the download is passed on over ssh, and a timer has no ssh-agent of yours: a key with a passphrase can't be used, so
+# it fails every night.
+#
+# In a copy of your own, put in your user for "someone" and where the program and Hylly's settings folder are, as in
+# hylly.service. Then:
+#   sudo cp hylly-download.service hylly-download.timer /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now hylly-download.timer
+#   systemctl list-timers hylly-download    # when it ran, and when it runs next
+#   journalctl -u hylly-download            # what it said
+[Unit]
+Description=Hylly downloads from the shops, once
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=someone
+Group=someone
+# What it writes in the library, its group may change too, as on a library a share writes for that group: as
+# hylly-jobs.service
+UMask=0002
+WorkingDirectory=~
+ExecStart=/home/someone/.local/share/uv/tools/hylly/bin/hylly download
+Environment=PYTHONUNBUFFERED=1
+# A first download can take a day; one still running when the timer comes again isn't started twice
+TimeoutStartSec=infinity
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+
+# Fewer rights. Not the server's walls: it needs the shops' logins, which it may also renew, and writes the library.
+# The settings folder, with your rules and the alarms' ntfy address in secrets/, it only reads.
+ReadOnlyPaths=/home/someone/.config/hylly
+ProtectSystem=full
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+NoNewPrivileges=yes

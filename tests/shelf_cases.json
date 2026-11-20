@@ -1,0 +1,42 @@
+{
+  "about": "Shelves and titles that the page's shelfRule (catalog_page.html) and shelves.rule must agree on: test_shelf_rule.py runs them in Python, and tests/browser/check.py in real browsers, through the page's own code. Each title as the server has it, a cover as one of the catalog's own thumbnails; the page makes its own fields from it there (lay, srcs), and runs them as nobody's: no reading, no lists.",
+  "items": [
+    {"id": "a", "t": "The Stone Lantern", "a": ["Mira Holt"], "s": "Stone Lantern", "p": "Northlight", "k": "book", "src": "humble", "cp": [["storybundle", "SB"]],
+     "g": ["Fantasy"], "tg": ["Favourites"], "dev": "ereader", "kf": "yes", "y": "1982", "d": "The wanderer follows.", "c": "covers/0123456789abcdef.webp"},
+    {"id": "b", "t": "café crème", "k": "comic", "src": "itchio", "g": [], "tf": true},
+    {"id": "c", "t": "Harbour Rules Handbook", "a": ["Ansel Varga"], "k": "rpg", "src": "drivethrurpg", "gm": ["Wayfarers"], "tf": true,
+     "fx": {"title": "Harbour Rules Handbook"}, "_fixed": ["title"], "d": "Rules.", "kf": "no"},
+    {"id": "d", "t": "Тихая гавань", "a": ["Анна Писатель"], "s": "Гавань", "p": "Moonwake Press", "k": "book", "src": "humble", "g": [],
+     "y": "1990", "d": "Роман.", "c": "covers/fedcba9876543210.webp"}
+  ],
+  "cases": [
+    {"shelf": {"show": {}, "hide": {}}, "on": ["a", "b", "c", "d"]},
+    {"shelf": {"show": {"k": ["book"]}}, "on": ["a", "d"]},
+    {"shelf": {"hide": {"src": ["itchio"]}}, "on": ["a", "c", "d"]},
+    {"shelf": {"show": {"src": ["storybundle"]}}, "on": ["a"]},
+    {"shelf": {"show": {"a": ["holt"]}}, "on": ["a"]},
+    {"shelf": {"show": {"t": ["CAFE"]}}, "on": ["b"]},
+    {"shelf": {"show": {"t": ["lantern wanderer"]}}, "on": []},
+    {"shelf": {"show": {"t": ["lantern stone"]}}, "on": ["a"]},
+    {"shelf": {"show": {"miss": ["all"]}}, "on": ["b"]},
+    {"shelf": {"show": {"miss": ["t"]}}, "on": ["b"]},
+    {"shelf": {"show": {"miss": ["c"]}}, "on": ["b", "c"]},
+    {"shelf": {"show": {"gm": ["Wayfarers"]}, "hide": {}}, "on": ["c"]},
+    {"shelf": {"show": {"k": ["book", "comic"]}, "hide": {"tg": ["Favourites"]}}, "on": ["b", "d"]},
+    {"shelf": {"show": {"kf": ["yes"]}}, "on": ["a"]},
+    {"shelf": {"show": {"kf": ["no"]}}, "on": ["c"]},
+    {"shelf": {"show": {"rd": ["not"]}}, "on": []},
+    {"shelf": {"hide": {"ls": ["on"]}}, "on": ["a", "b", "c", "d"]},
+    {"shelf": {"show": {"dev": ["ereader"]}}, "on": ["a"]},
+    {"shelf": {"show": {"s": ["lantern"]}}, "on": ["a"]},
+    {"shelf": {"show": {"p": ["northlight"]}, "hide": {"k": ["comic"]}}, "on": ["a"]},
+    {"shelf": {"show": {"g": ["Fantasy"], "k": ["book"]}}, "on": ["a"]},
+    {"shelf": {"show": {"g": ["Fantasy"], "k": ["comic"]}}, "on": []},
+    {"shelf": {"show": {"k": []}, "hide": {"k": []}}, "on": ["a", "b", "c", "d"]},
+    {"shelf": {"show": {"t": ["ГАВАНЬ"]}}, "on": ["d"]},
+    {"shelf": {"show": {"t": ["тихая гавань"], "a": ["писатель"]}}, "on": ["d"]},
+    {"shelf": {"show": {"s": ["гавань"]}}, "on": ["d"]},
+    {"shelf": {"show": {"a": ["анна"]}, "hide": {"t": ["гавань"]}}, "on": []},
+    {"shelf": {"show": {"t": ["тиха"]}}, "on": []}
+  ]
+}

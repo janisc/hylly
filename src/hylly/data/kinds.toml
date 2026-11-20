@@ -1,0 +1,122 @@
+# The kinds a title may be, and what a shop's file is. Your own rules files can change any of it: see docs/rules.md,
+# or hylly rules.
+#
+# Each [kinds.X] is a kind, and these are all of them: the library page, the feeds, the settings, your folders, your
+# corrections (hylly set kind) and the commands (--kind) take these and no others. A kind added here, or in a rules
+# file of yours, is a kind everywhere; none can be taken away: in [kinds] and [kinds.X], inherit = false and off = true
+# act on the words alone (bundle_words, publishers, and [kinds]' prose_max_mb), as they did before. In the order they
+# are listed and a Humble download fetches them (the small and useful first), from the most general to the most
+# particular:
+#   label         one of them, as the library page names it
+#   plural        many of them, as the page's Kind filter and the feeds name them
+#   device        where it is best read: ereader, tablet or either (the e-reader, better on a tablet). A title's file
+#                 can still make it a tablet's: [devices] in the settings
+#   why_device    why it is read there, in a few words, as hylly rules try and a dry run's --json say it
+#   folders       your own folders of that name are of this kind, unless the settings say otherwise
+#   joins_books   a copy of it in another place is one title with a book's there, on one card in the library page
+#   text_first    its e-book opens before its pages (a PDF, a comic's), in the library page's reader
+#
+# What kind a shop's title is goes by the same rules at every shop: a title offered in a format of a kind's layout
+# (formats.toml: CBZ, CBR) is that kind. Otherwise words in the name of a bundle it came in, or the name of who made
+# it (its publisher, itch.io's creator), make it a comic, an RPG book or a tech book, the most particular first;
+# without any, it is its shop's own: a book at Humble and StoryBundle, an RPG book at DriveThruRPG, and at itch.io
+# what its creator classified it as (itchio below). The words of the shop's own kind change nothing (an RPG
+# publisher's at DriveThruRPG). Your corrections win over all of it.
+#   bundle_words  whole words or phrases in a bundle's name
+#   publishers    whole words in who made it: "udon" is Udon Lantern Press, never Pseudonym Press
+#   prose         a title of this kind by its words, whose text file (EPUB, MOBI) is smaller than prose_max_mb, is a
+#                 novel: a book
+#   layout        a title offered in a format of this layout is this kind, whatever its words
+#   itchio        itch.io's classifications of this kind, as the survey groups them (book, comic, tabletop, other,
+#                 game)
+
+[kinds]
+# A comic's or RPG book's title by its words whose text file (EPUB, MOBI) is smaller than this, in MB (1,000,000 bytes),
+# is a book. 8.4: the 8,388,608 bytes it was, as near as a short number allows.
+prose_max_mb = 8.4
+
+[kinds.book]
+label = "Book"
+plural = "Books"
+device = "ereader"
+text_first = true
+itchio = ["book", "other"]
+
+[kinds.tech]
+label = "Tech book"
+plural = "Tech books"
+device = "either"
+why_device = "fine on an e-reader, better on a tablet for code and diagrams"
+joins_books = true
+bundle_words = ["tech", "technology", "programming", "coding", "code", "python", "javascript", "typescript", "java",
+                "rust", "golang", "linux", "unix", "devops", "cloud", "aws", "azure", "kubernetes", "docker",
+                "security", "hacking", "hacker", "hackers", "cybersecurity", "cyber", "data science",
+                "machine learning", "deep learning", "ai", "developer", "developers", "web development",
+                "game development", "game dev", "computer science", "computing", "computer", "computers",
+                "networking", "sql", "database", "databases", "algorithm", "algorithms", "raspberry pi", "arduino",
+                "electronics", "maker", "stem", "ui/ux", "o'reilly", "oreilly", "no starch", "packt", "manning",
+                "pragmatic", "apress", "microsoft"]
+publishers = ["o'reilly", "oreilly", "no starch", "packt", "manning", "pragmatic", "apress", "addison-wesley",
+              "microsoft press", "crc press", "mercury learning", "make:", "maker media", "raspberry pi", "sitepoint",
+              "springer", "morgan kaufmann", "sams", "peachpit", "cisco press", "mit press", "bpb"]
+
+[kinds.rpg]
+label = "RPG book"
+plural = "RPG books"
+device = "tablet"
+prose = true
+joins_books = true
+itchio = ["tabletop", "game"]
+bundle_words = ["rpg", "rpgs", "role-playing", "roleplaying", "tabletop", "ttrpg", "ttrpgs", "5e", "d&d", "dungeons",
+                "pathfinder", "starfinder", "battletech", "mechwarrior", "world of darkness", "shadowrun",
+                "call of cthulhu", "savage worlds", "warhammer", "cyberpunk red", "osr"]
+publishers = ["paizo", "catalyst game labs", "chaosium", "evil hat", "modiphius", "free league", "fria ligan",
+              "pelgrane", "onyx path", "white wolf", "green ronin", "kobold press", "monte cook", "cubicle 7",
+              "pinnacle", "steve jackson games", "goodman games", "r. talsorian", "mongoose", "fantasy flight",
+              "wizards of the coast", "renegade game studios", "renegade games", "magpie games", "games workshop", "arc dream",
+              "sine nomine", "necrotic gnome", "frog god", "troll lord", "atlas games", "posthuman studios",
+              "petersen games", "exalted funeral", "the design mechanism"]
+
+[kinds.comic]
+label = "Comic"
+plural = "Comics"
+device = "tablet"
+prose = true
+layout = "comic"
+folders = ["comics"]
+itchio = ["comic"]
+bundle_words = ["comic", "comics", "manga", "graphic novel", "graphic novels", "manhwa", "webtoon", "webtoons",
+                "bande dessinée", "bandes dessinées", "bande dessinées", "bandes dessinée"]
+publishers = ["image comics", "dark horse", "idw", "boom! studios", "boom studios", "kodansha", "viz media",
+              "yen press", "seven seas", "titan comics", "dynamite", "oni press", "fantagraphics", "valiant",
+              "archie comics", "humanoids", "vertical", "tokyopop", "udon", "aftershock", "ahoy comics",
+              "mad cave", "scout comics", "vault comics", "top shelf", "drawn & quarterly", "first second",
+              "magnetic press", "lion forge", "zenescope", "action lab", "black mask", "avatar press",
+              "rebellion", "2000 ad", "abrams comicarts", "dc comics", "marvel"]
+
+[kinds.manual]
+label = "Manual"
+plural = "Manuals"
+device = "ereader"
+folders = ["manuals"]
+
+[labels]
+# A shop's file whose name (such as "PDF (Supplement)") has one of these words is an extra, not another copy of
+# the book.
+extra = ["supplement*", "bonus*", "extra*", "companion*", "sample*", "preview*", "errata*", "wallpaper*", "map", "maps"]
+# A shop's file with one of these words is audio or video, whatever its format (often a ZIP).
+audio = ["mp3", "flac", "aac", "m4b", "audio", "audiobook"]
+video = ["video", "1080p", "720p", "480p", "4k"]
+
+[languages]
+# A shop's file whose name names a language is a translation. The file whose name names none is kept, unless
+# language = in the [download] settings asks for one of these.
+german = ["deutsch", "german"]
+french = ["français", "french"]
+spanish = ["español", "spanish"]
+italian = ["italiano", "italian"]
+portuguese = ["português", "portuguese"]
+polish = ["polski", "polish"]
+russian = ["russian"]
+japanese = ["japanese"]
+dutch = ["dutch", "nederlands"]

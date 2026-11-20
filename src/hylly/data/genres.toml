@@ -1,0 +1,107 @@
+# Genres, for browsing: the words in a title's subjects, its bundle, its folder or its title (except at the sources
+# in titles_unread) that give it each genre. A title can have several, in this order.
+#   words     whole words or phrases, case and accents not counting, any spaces or punctuation between a phrase's
+#             words; a * at the end means "starts with": "dystopi*" finds dystopia and dystopian. A plural that
+#             changes the word's end is a word of its own: "mystery*" doesn't find mysteries, so both are here
+#   patterns  regular expressions, for what words can't say
+# Your own rules files can change any of it: see docs/rules.md, or hylly rules.
+#
+# "Game Manuals" is given by the manuals folder, not by words: a survival manual is no game manual.
+
+[genres]
+# The sources whose titles aren't read for these words, only their subjects, bundle and folder: a shop by its folder's
+# name in the library, or a folder of your own, as titles_unread_add = ["humble"] in a rules file of your own leaves
+# Humble's out. None as shipped: words go by whole words, so a title's own words find its genre as its subjects do
+# ("witch" isn't found in switch, nor "craft" in aircraft, nor "unity" in community).
+titles_unread = []
+
+[genres."Science Fiction"]
+words = ["science fiction*", "sciencefiction*", "sci fi*", "scifi*", "sf", "space opera*", "cyberpunk*", "steampunk*",
+         "dystopi*", "time travel*"]
+
+[genres."Fantasy"]
+words = ["fantasy*", "fantasies", "dragons*", "faerie*", "sword*", "wizard*", "witch*"]
+
+[genres."Horror"]
+words = ["horror*", "lovecraft*", "zombie*", "vampire*", "ghost*", "haunt*", "creepy*", "eerie*", "terror*"]
+
+[genres."Mystery & Thriller"]
+words = ["mystery*", "mysteries", "thriller*", "crime*", "detective*", "noir*", "murder*", "suspense*"]
+
+[genres."Comics & Graphic Novels"]
+words = ["comic*", "graphic novel*", "bande dessin*"]
+
+[genres."Manga"]
+words = ["manga*"]
+
+[genres."Programming"]
+words = ["programming*", "software*", "python*", "javascript*", "computer*", "coding*", "linux*", "unix*",
+         "algorithm*", "developer*", "machine learning*", "ai", "data science*"]
+
+[genres."Game Development & Design"]
+words = ["game development*", "game design*", "videogame design*", "game programming*", "game engine*", "game dev*",
+         "level design*", "unity*", "unreal*", "godot*"]
+
+[genres."Video Games"]
+words = ["video game*", "videogame*", "gaming*", "nintendo*", "sega*", "xbox*", "atari*", "playstation*", "arcade*"]
+
+[genres."Tabletop RPG"]
+words = ["rpg", "rpgs", "role playing*", "roleplaying*", "battletech*", "dungeons*", "pathfinder*",
+         "vampire the masquerade*", "tabletop*"]
+
+[genres."Art & Design"]
+# "art" as a word of its own: not the start of "artificial" or "article".
+words = ["art", "drawing*", "illustration*", "animation*", "graphic design*", "photograph*", "artbook*", "painting*"]
+
+[genres."History"]
+words = ["history*", "histories", "historical*", "viking*", "medieval*", "ancient*", "world war*"]
+
+[genres."Psychology & Philosophy"]
+words = ["psycholog*", "neuropsycholog*", "parapsycholog*", "philosoph*", "mytholog*"]
+
+[genres."Occult & Religion"]
+words = ["occult*", "magic*", "esoteric*", "religio*", "spiritual*", "tarot*", "shaman*", "alchemy*"]
+
+[genres."Poetry"]
+words = ["poetry*", "poems*", "poet*"]
+
+[genres."Writing"]
+words = ["writing", "creative writing*"]
+patterns = ['''writers?'? (?:guide|craft|tools)''']
+
+[genres."Science & Math"]
+words = ["physics*", "math*", "chemistry*", "biology*", "astronom*", "engineering*", "electronics*", "stem"]
+# science, but not science fiction
+patterns = ['science(?!\s*fiction)']
+
+[genres."Business & Self-Help"]
+words = ["business*", "self help*", "selfhelp*", "career*", "leadership*", "productivity*", "finance*"]
+
+[genres."Home, Garden & Outdoors"]
+# "craft" as a word, and the crafts by name: not "craft" inside another word, such as Lovecraft or aircraft
+words = ["garden*", "cooking*", "cookbook*", "craft*", "bushcraft*", "handicraft*", "papercraft*", "needlecraft*",
+         "knit*", "crochet*", "survival*", "outdoor*", "homestead*", "hunting*", "fishing*"]
+
+[genres."Travel"]
+words = ["travel*"]
+
+[genres."Classics"]
+# not "classic" alone: game lines and editions are called that too
+words = ["classics", "classic literature*", "literary fiction*"]
+
+[genres."Young Adult"]
+words = ["young adult*", "ya", "juvenile*", "teen", "teens", "teenage"]
+
+[genres."Romance"]
+# "romance" at the start of a word only: not inside another word
+words = ["romance*", "love story*", "love stories"]
+
+# Every title of a kind gets a genre: comics are Comics & Graphic Novels unless they are Manga, and manuals are
+# Game Manuals and nothing else.
+[kind_genres.comic]
+genre = "Comics & Graphic Novels"
+unless = ["Manga"]
+
+[kind_genres.manual]
+genre = "Game Manuals"
+only = true

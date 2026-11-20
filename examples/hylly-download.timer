@@ -1,0 +1,12 @@
+# Starts hylly-download.service every night: hylly download, every shop you have a login for. Copy both files, as
+# hylly-download.service says. A night the computer was off, it runs as it starts again (Persistent).
+[Unit]
+Description=Hylly downloads from the shops, every night
+
+[Timer]
+OnCalendar=*-*-* 01:30
+RandomizedDelaySec=15min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

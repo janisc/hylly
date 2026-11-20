@@ -1,0 +1,7 @@
+pymupdf-layout; sys_platform == 'never'
+pymupdf4llm; sys_platform == 'never'
+onnxruntime; sys_platform == 'never'
+numpy; sys_platform == 'never'
+networkx; sys_platform == 'never'
+pyyaml; sys_platform == 'never'
+tabulate; sys_platform == 'never'

@@ -1,0 +1,13 @@
+# Starts hylly-lookup.service every night, after the downloads: hylly catalog --lookup, the new titles looked up and the
+# library page built. Copy both files, as hylly-lookup.service says. A night the computer was off, it runs as it starts
+# again (Persistent).
+[Unit]
+Description=Hylly lookups and the library page, every night
+
+[Timer]
+OnCalendar=*-*-* 03:30
+RandomizedDelaySec=15min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

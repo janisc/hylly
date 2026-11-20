@@ -1,0 +1,12 @@
+# Starts hylly-backup.service every night: a backup on another disk, to target under [backup] in the settings. Copy both
+# files, as hylly-backup.service says. A night the computer was off, it runs as it starts again (Persistent).
+[Unit]
+Description=Hylly backup, every night
+
+[Timer]
+OnCalendar=*-*-* 04:30
+RandomizedDelaySec=15min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

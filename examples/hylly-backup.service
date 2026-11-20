@@ -1,0 +1,54 @@
+# A backup on another disk, once: hylly backup, to target under [backup] in the settings, with keep there thinning the
+# older zips if you set it. hylly-backup.timer starts it every night. The help tells more ("A backup on another disk",
+# "On a timer").
+#
+# Make the first backup to the disk by hand, at a terminal, before the timer: a backup asks before its first copy to a
+# disk, the first there of another library, and one that would write more than all backed up there before, and with
+# nobody to answer, as here, it stops with exit code 8, copies nothing and sends a note. A disk that isn't mounted is
+# refused too, as an empty folder isn't taken for the backup, and a note says so. Its notes go where the alarms do
+# (secrets/ntfy-url), and the unit then counts as failed (systemctl --failed).
+#
+# Run it on the computer that has the library. On one that reaches the server over ssh ([remote] ssh in its settings),
+# the fresh copy of the records is asked for over ssh, and a timer has no ssh-agent of yours: a key with a passphrase
+# can't be used, so the zip gets the server's older copy every night, the backup ends partly, and keep thins nothing.
+#
+# In a copy of your own, put in your user for "someone" and where the program and Hylly's folders are, as in
+# hylly.service. Then:
+#   sudo cp hylly-backup.service hylly-backup.timer /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now hylly-backup.timer
+#   systemctl list-timers hylly-backup    # when it ran, and when it runs next
+#   journalctl -u hylly-backup            # what it said
+[Unit]
+Description=Hylly backup, once
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=someone
+Group=someone
+WorkingDirectory=~
+ExecStart=/home/someone/.local/share/uv/tools/hylly/bin/hylly backup
+Environment=PYTHONUNBUFFERED=1
+# The first backup to a disk can take a day; one still running when the timer comes again isn't started twice
+TimeoutStartSec=infinity
+# Kind to the server meanwhile: the disks go to it first
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+
+# Fewer rights. Not the server's walls: a backup writes wherever its disk is mounted, which is yours to say. The shops'
+# logins it never needs, and they aren't even there. The settings folder, with your rules and the alarms' ntfy address
+# in secrets/, it only reads.
+InaccessiblePaths=/home/someone/.local/share/hylly/logins
+ReadOnlyPaths=/home/someone/.config/hylly
+ProtectSystem=full
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+NoNewPrivileges=yes

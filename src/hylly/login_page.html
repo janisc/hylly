@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en" data-skin="{{look}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log in · {{library}}</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon-180.png?v=86b7f879">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="{{library}}">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230C447C'/%3E%3Crect x='22' y='28' width='12' height='46' rx='2' fill='%23F1EFE8'/%3E%3Crect x='36' y='34' width='12' height='40' rx='2' fill='%23FAC775'/%3E%3Crect x='50' y='26' width='11' height='48' rx='2' fill='%23F0997B'/%3E%3Crect x='64' y='30' width='12' height='44' rx='2' fill='%2385B7EB' transform='rotate(16 70 74)'/%3E%3Crect x='18' y='74' width='64' height='6' rx='3' fill='%23B5D4F4'/%3E%3C/svg%3E">
+<!-- Served by hylly serve at /login. The values in double braces are filled in, escaped, for each request: the
+     library's own theme among them, for a browser that has picked none (the script below wears its pick). -->
+<script>try {  /* the colours and the theme this browser chose, as the library page does */
+  const t = localStorage.getItem("hylly.theme"), k = localStorage.getItem("hylly.look") || localStorage.getItem("hylly.lookhere");
+  if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+  if (k === "yours") {  /* your own theme: its colours over the theme it was made from (themes.own_theme) */
+    const o = JSON.parse(localStorage.getItem("hylly.own") || "null") || {}, r = document.documentElement;
+    if (/^[a-z][a-z0-9-]{0,39}$/.test(o.base || "")) r.dataset.skin = o.base;
+    for (const m of ["light", "dark"]) for (const [key, c] of Object.entries((o.colours || {})[m] || {}))
+      if (/^[a-z][a-z-]{0,20}$/.test(key) && /^#[0-9a-f]{6}$/.test(c)) r.style.setProperty(`--${m[0]}-${key}`, c);
+  } else if (/^[a-z][a-z0-9-]{0,39}$/.test(k || "")) document.documentElement.dataset.skin = k;
+} catch {}</script>
+<style>
+/* theme: the default, made by themes.inline_block */
+:root { --l-bg: #f6f4ef; --l-panel: #ffffff; --l-ink: #1f1d1a; --l-muted: #6b665d; --l-line: #e2ddd2; --l-accent: #2f5d8a; --l-accent-ink: #ffffff; --l-chip: #ece7dc; --l-go: #2a7d4c; --l-go-ink: #ffffff; --l-go-soft: #d5ecdc; --l-go-soft-ink: #1d5535; --l-star: #a16207; --l-star-off: #8a847a; --l-ok: #2e7d4f; --l-warn: #8a5a12; --l-bad: #a33a2b; --l-r-bar: #f6f4ef; --l-r-pop: #ffffff; --l-r-field: #ece7dc; --l-r-rule: #e2ddd2; --l-r-edge: #cfc8bd; --l-r-dim: #a8a196; --l-r-ring: #8a847a; --l-r-ink: #1f1d1a; --l-r-muted: #6b665d; --l-r-soft: #4a463f; --l-r-link: #2f5d8a; --l-r-pick: #2f5d8a; --l-r-star: #a16207; --l-r-mark: #fde68a; --l-r-mark-ink: #1f1d1a; --l-load-page: #eef0e7; --l-load-ink: #46614b; --l-load-leaf: #86a083; --l-load-fill: #d2ddcb; --l-load-fruit: #a5805d; --l-load-muted: #5d6b5f; --l-page: #fbfaf6; --l-page-ink: #1c1917; --l-page-muted: #6b645c; --l-page-link: #2f5d8a; --d-bg: #16171a; --d-panel: #1f2125; --d-ink: #ecebe8; --d-muted: #a09d96; --d-line: #33363c; --d-accent: #7fb0e0; --d-accent-ink: #0d1520; --d-chip: #2a2d33; --d-go: #5fbf83; --d-go-ink: #0c1f13; --d-go-soft: #1d3b29; --d-go-soft-ink: #cbe9d5; --d-star: #fbbf24; --d-star-off: #8b8b93; --d-ok: #6cc28f; --d-warn: #e0b46f; --d-bad: #ef8a7a; --d-r-bar: #18181b; --d-r-pop: #1f1f23; --d-r-field: #2e2e33; --d-r-rule: #27272a; --d-r-edge: #3f3f46; --d-r-dim: #52525b; --d-r-ring: #71717a; --d-r-ink: #f4f4f5; --d-r-muted: #a1a1aa; --d-r-soft: #d4d4d8; --d-r-link: #93c5fd; --d-r-pick: #60a5fa; --d-r-star: #fbbf24; --d-r-mark: #67571a; --d-r-mark-ink: #fef9c3; --d-load-page: #131b16; --d-load-ink: #a3bf9f; --d-load-leaf: #6f8f72; --d-load-fill: #263629; --d-load-fruit: #bf946f; --d-load-muted: #8a9a8b; --d-page: #0c0c0d; --d-page-ink: #d6d3d1; --d-page-muted: #9c968f; --d-page-link: #93c5fd; --font: system-ui, -apple-system, "Segoe UI", sans-serif; }
+:root { --bg: var(--l-bg); --panel: var(--l-panel); --ink: var(--l-ink); --muted: var(--l-muted); --line: var(--l-line); --accent: var(--l-accent); --accent-ink: var(--l-accent-ink); --chip: var(--l-chip); --go: var(--l-go); --go-ink: var(--l-go-ink); --go-soft: var(--l-go-soft); --go-soft-ink: var(--l-go-soft-ink); --star: var(--l-star); --star-off: var(--l-star-off); --ok: var(--l-ok); --warn: var(--l-warn); --bad: var(--l-bad); --code: var(--l-chip); --picked: color-mix(in srgb, var(--l-accent) 12%, transparent); --shadow: 0 1px 3px rgba(0, 0, 0, .12); color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: var(--d-bg); --panel: var(--d-panel); --ink: var(--d-ink); --muted: var(--d-muted); --line: var(--d-line); --accent: var(--d-accent); --accent-ink: var(--d-accent-ink); --chip: var(--d-chip); --go: var(--d-go); --go-ink: var(--d-go-ink); --go-soft: var(--d-go-soft); --go-soft-ink: var(--d-go-soft-ink); --star: var(--d-star); --star-off: var(--d-star-off); --ok: var(--d-ok); --warn: var(--d-warn); --bad: var(--d-bad); --code: var(--d-chip); --picked: color-mix(in srgb, var(--d-accent) 14%, transparent); --shadow: 0 1px 3px rgba(0, 0, 0, .5); color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: var(--d-bg); --panel: var(--d-panel); --ink: var(--d-ink); --muted: var(--d-muted); --line: var(--d-line); --accent: var(--d-accent); --accent-ink: var(--d-accent-ink); --chip: var(--d-chip); --go: var(--d-go); --go-ink: var(--d-go-ink); --go-soft: var(--d-go-soft); --go-soft-ink: var(--d-go-soft-ink); --star: var(--d-star); --star-off: var(--d-star-off); --ok: var(--d-ok); --warn: var(--d-warn); --bad: var(--d-bad); --code: var(--d-chip); --picked: color-mix(in srgb, var(--d-accent) 14%, transparent); --shadow: 0 1px 3px rgba(0, 0, 0, .5); color-scheme: dark; }
+#reader, #reader[data-chrome="dark"], .rguide { --r-bar: var(--d-r-bar); --r-pop: var(--d-r-pop); --r-field: var(--d-r-field); --r-rule: var(--d-r-rule); --r-edge: var(--d-r-edge); --r-dim: var(--d-r-dim); --r-ring: var(--d-r-ring); --r-ink: var(--d-r-ink); --r-muted: var(--d-r-muted); --r-soft: var(--d-r-soft); --r-link: var(--d-r-link); --r-pick: var(--d-r-pick); --r-star: var(--d-r-star); --r-mark: var(--d-r-mark); --r-mark-ink: var(--d-r-mark-ink); }
+#reader[data-chrome="light"] { --r-bar: var(--l-r-bar); --r-pop: var(--l-r-pop); --r-field: var(--l-r-field); --r-rule: var(--l-r-rule); --r-edge: var(--l-r-edge); --r-dim: var(--l-r-dim); --r-ring: var(--l-r-ring); --r-ink: var(--l-r-ink); --r-muted: var(--l-r-muted); --r-soft: var(--l-r-soft); --r-link: var(--l-r-link); --r-pick: var(--l-r-pick); --r-star: var(--l-r-star); --r-mark: var(--l-r-mark); --r-mark-ink: var(--l-r-mark-ink); }
+.rload { --lp: var(--l-load-page); --li: var(--l-load-ink); --ll: var(--l-load-leaf); --lf: var(--l-load-fill); --lr: var(--l-load-fruit); --lm: var(--l-load-muted); --lt: color-mix(in srgb, var(--l-load-ink) 16%, transparent); }
+.rload.dark { --lp: var(--d-load-page); --li: var(--d-load-ink); --ll: var(--d-load-leaf); --lf: var(--d-load-fill); --lr: var(--d-load-fruit); --lm: var(--d-load-muted); --lt: color-mix(in srgb, var(--d-load-ink) 16%, transparent); }
+/* theme: end */
+/* every theme, from the server */
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px;
+       background: var(--bg); color: var(--ink); font: 16px/1.45 var(--font); }
+form { width: min(360px, 100%); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 26px 24px 22px; display: flex; flex-direction: column; gap: 14px; }
+h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: .02em; }
+label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+input { font: inherit; font-size: 16px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); }
+input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+button { font: inherit; font-weight: 600; height: 46px; margin-top: 4px; border: 0; border-radius: 10px; background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+.error { margin: 0; color: var(--bad); font-size: 14px; }
+.error:empty { display: none; }
+.note { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.foot { margin: 0; color: var(--muted); font-size: 13px; }  /* under the form, the link's page's too: what runs the library */
+.foot a { color: inherit; display: inline-block; padding: 4px 2px; }
+</style>
+</head>
+<body>
+<form method="post" action="/login">
+  <h1>{{library}}</h1>
+  <p class="error" role="alert">{{error}}</p>
+  <label>Name <input name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required value="{{name}}" {{name_focus}}></label>
+  <label>Password <input name="password" type="password" autocomplete="current-password" required {{password_focus}}></label>
+  <input type="hidden" name="next" value="{{next}}">
+  <button type="submit">Log in</button>
+  <p class="note">This browser stays logged in for {{days}} days, or until you log out.</p>
+</form>
+<p class="foot">Runs on Hylly, free software · <a href="{{source}}" rel="noopener noreferrer">Source</a></p>
+<script>try {  /* the address's part after #, such as the library page's shelf, search and filters, which no request carries: on to the page after the login too, in next, which the server keeps to this server's own pages (_next_page) */
+  const next = document.querySelector('input[name="next"]');
+  if (next && location.hash.length > 1 && next.value.startsWith("/") && !next.value.includes("#")) next.value += location.hash;
+} catch {}</script>
+</body>
+</html>

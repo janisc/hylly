@@ -1,0 +1,103 @@
+# The library server's periodic jobs, run once: the alarms' look every minute with the daily summary, the nightly copy
+# of the database and the settings, and the Inbox's pass. hylly-jobs.timer starts it every minute. For jobs = "external"
+# under [server] in the settings, which leaves these to "hylly server jobs"; with the setting as it comes, the server runs
+# them itself, and this runs nothing and ends well, but for the Inbox ([inbox] in the settings) beside a server
+# walled in by hylly.service: that server can see neither the Inbox's folders nor the lookups' keys, so this runs the
+# Inbox, and nothing else, whatever jobs says. The help tells more ("The library server", "Its periodic jobs", "The Inbox").
+#
+# With the same walls as hylly.service, but for the port, and keeping the network for the alarms' phone service: on a
+# server walled in by hylly.service these jobs would otherwise write the library's state/ and bell.log outside the
+# walls, where the walled server could have left a link in their way. Without walls of your own, leave them in all the
+# same. A service made from this file when Hylly kept everything in ~/.local/share/Hylly names that one folder instead,
+# and goes on working as it is, as hylly.service does.
+#
+# In a copy of your own, put in your user for "someone", your library for /srv/books (its parent, under
+# TemporaryFileSystem, hides the rest of that disk), your Inbox for /srv/inbox (or take that line out if you have none),
+# and where the program and Hylly's folders are, with any variable of Hylly's or XDG folder you set, as in
+# hylly.service. Then:
+#   sudo cp hylly-jobs.service hylly-jobs.timer /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now hylly-jobs.timer
+#   systemctl list-timers hylly-jobs    # when it ran, and when it runs next
+[Unit]
+Description=Hylly library server's periodic jobs, once
+# Not RequiresMountsFor: a library whose disk is away must not keep this from starting, or the alarm that it can't be
+# reached would never go out
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=someone
+Group=someone
+UMask=0002
+WorkingDirectory=/home/someone/.local/share/hylly
+ExecStart=/home/someone/.local/share/uv/tools/hylly/bin/hylly server jobs
+Environment=PYTHONUNBUFFERED=1
+# The alarms are done within the minute; one stuck longer is ended, and the timer starts the next run
+TimeoutStartSec=10min
+# The nightly copy and the Inbox's pass run as processes of their own (hylly internal server-job), started inside these
+# walls and not waited for, so the next minute's alarms needn't wait for them. KillMode=process ends only hylly server
+# jobs itself when it's done, and leaves those to finish: systemd may say at the next start that a process of the last
+# one runs still. Their own locks keep a second one from starting meanwhile; a pass ends itself after an hour. Their
+# temporary files go into tmp in Hylly's cache folder, not into this service's own /tmp (PrivateTmp= below), which
+# systemd takes away as the service ends.
+KillMode=process
+
+# The disk: only these exist for it. The - lets it start while the library's disk is away, so that the alarm goes out.
+TemporaryFileSystem=/srv:ro /run:ro
+BindPaths=-/srv/books
+# The Inbox: the folder [inbox] names (folder, and any of folders, each a line of its own). The pass writes it: it
+# moves what can't be taken into Not added and removes what the library has, which needs the right to write in each of
+# the Inbox's folders, the ones the share makes as books come in too. Under PrivateUsers=yes only the user above and
+# its own group count, not its other groups: the share must write as that user or that group (Samba's force user or
+# force group, say), and make its folders writable by it. 7-Zip, for CBR comics, if it's in your home folder, needs a
+# line of its own (BindReadOnlyPaths), as the pass builds the catalog.
+BindPaths=-/srv/inbox
+ProtectHome=tmpfs
+# Hylly's data, state and cache, as for hylly.service, but for what the jobs started from another computer said
+BindPaths=/home/someone/.local/share/hylly /home/someone/.local/state/hylly /home/someone/.cache/hylly
+InaccessiblePaths=/home/someone/.local/state/hylly/job-output
+# The shops' logins: no job needs them, and they aren't even there. Of the logins folder only the lookups' keys are, read
+# only, as the Inbox's pass asks the lookup sources about its new books, as hylly lookup does
+TemporaryFileSystem=/home/someone/.local/share/hylly/logins:ro
+BindReadOnlyPaths=-/home/someone/.local/share/hylly/logins/metron-token.txt -/home/someone/.local/share/hylly/logins/comicvine-key.txt -/home/someone/.local/share/hylly/logins/googlebooks-key.txt
+# The settings folder, with your rules and the alarms' ntfy address and token in secrets/: read, never written
+BindReadOnlyPaths=/home/someone/.config/hylly
+# The program, as in hylly.service. One installed from a checkout of the source (--editable) needs that folder too, in a
+# BindReadOnlyPaths= line of its own: without it, each run ends at once with "No module named 'hylly'".
+BindReadOnlyPaths=/home/someone/.local/share/uv/tools/hylly
+# The Python that uv installed, if it did (uv python list says where): the tool's own is a link to it
+BindReadOnlyPaths=-/home/someone/.local/share/uv/python
+# Names on the network, where systemd-resolved does them, for the phone service and the lookup sources; the - lets a
+# computer without it start too
+BindReadOnlyPaths=-/run/systemd/resolve
+
+# Other processes of your own: without this, /proc would lead through them to the whole disk
+PrivateUsers=yes
+
+# The rest of the computer
+ProtectSystem=strict
+InaccessiblePaths=-/etc/ssh -/etc/samba -/var/lib/samba -/var/lib/tailscale -/var/log -/dev/pts
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectProc=invisible
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+# No AF_UNIX: that's what keeps it from the sockets of other programs, on the disk or not. The network stays, for ntfy
+# and the lookup sources; it listens on no port
+RestrictAddressFamilies=AF_INET AF_INET6 AF_NETLINK
+NoNewPrivileges=yes
+CapabilityBoundingSet=

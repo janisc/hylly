@@ -1,0 +1,31 @@
+# Python and tools, and what uv build makes
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+/dist/
+# The weekly audit's list of what is installed (.github/workflows/audit.yml), when its steps are run by hand
+/requirements.txt
+
+# AI assistants' own: their working copies, and their settings on this computer
+.claude/worktrees/
+.claude/settings.local.json
+
+# What systems and editors leave beside the files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# A settings file belongs next to your library's settings (%LOCALAPPDATA%\Hylly on Windows), not here
+settings.toml
+
+# Your own notes, scripts, lists and logs beside the program: never in the repository, in any clone of it
+/private/
+/LOCATIONS.md
+/inventory/
+/logs/
+/*-list.csv
+
+# Any other files of your own that stay out of the repository go in .git/info/exclude

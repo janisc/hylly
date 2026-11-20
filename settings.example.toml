@@ -1,0 +1,275 @@
+# Hylly settings: copy this file to settings.toml in the settings folder and fill it in. hylly settings path says where
+# that file is, and hylly settings places where Hylly keeps each kind of its own files: %APPDATA%\Hylly on Windows,
+# ~/.config/hylly on Linux, ~/Library/Application Support/Hylly on macOS; or, for an install that keeps everything in
+# one folder, %LOCALAPPDATA%\Hylly on Windows and ~/.local/share/Hylly on Linux and macOS; or the folder HYLLY_HOME names.
+# It lives there, apart from the program and the library, so personal values never end up in the repository. It holds
+# no secrets: the alarms' ntfy address and token are in files of their own, in the secrets folder beside it (see [bell]).
+# Single quotes: Windows paths need no escaping. true and false go without quotes: a value of the wrong kind, such as
+# the text in access_log = "false", stops a command or the server with the section and the key. A key, a section or a name
+# at the top that Hylly doesn't have is said once, and left out. hylly settings show lists every setting, with where its
+# value comes from; hylly settings check lists every mistake in this file, and hylly settings edit opens it.
+# A size of files or a disk (max_mb, image_heavy_mb, cache_gb) counts as disks are sold: 1 MB is 1,000,000 bytes and
+# 1 GB 1,000,000,000; max_mb's and image_heavy_mb's defaults are where they keep the limits they had in 1,024s, and
+# cache_gb's 10 is now 10,000,000,000 bytes. memory_mb counts in 1,024s, as memory does.
+#
+# Environment variables, for what suits a container or a script better:
+#   HYLLY_HOME       one folder for all of Hylly's own files, on any system: this file, the database, logins, logs and
+#                    locks, the reader's cache, over the variables of each kind below
+#   HYLLY_CONFIG_DIR, HYLLY_DATA_DIR, HYLLY_STATE_DIR, HYLLY_CACHE_DIR, HYLLY_LOGINS_DIR   a folder of its own for one
+#                    kind: the settings (this file, rules, themes, secrets), the database, the logs and locks, the
+#                    reader's cache, the shops' logins; by its full path
+#   HYLLY_SETTINGS   this file alone, somewhere else
+#   HYLLY_RULES      your rules folder or file
+#   HYLLY_HUMBLE_SESSION, HYLLY_STORYBUNDLE_SESSION, HYLLY_ITCHIO_SESSION   a shop's cookie, instead of hylly login
+#   HYLLY_DRIVETHRURPG_KEY, HYLLY_ITCHIO_KEY, HYLLY_METRON_TOKEN, HYLLY_COMICVINE_KEY, HYLLY_GOOGLEBOOKS_KEY   a key, likewise.
+#                    These are for the commands that download and look up details, not for the place the server is
+#                    started from: the server needs none of them and takes them out of its environment as it starts, so
+#                    the Inbox's lookups it runs use the keys saved with hylly login
+#   HYLLY_NTFY_URL, HYLLY_NTFY_TOKEN   the alarms' ntfy address and token, instead of the files in secrets/; or a file
+#                    that holds one: HYLLY_NTFY_URL_FILE, HYLLY_NTFY_TOKEN_FILE. The token comes from where the
+#                    address does, and nowhere else
+#   HYLLY_NO_NOTIFY  any value: no notifications on this computer
+
+# The library root: a local folder or a network share.  (HYLLY_LIBRARY)
+# library = '\\NAS\Books'
+
+# StoryBundle: the number in the address of your "My Book Bundles" page, storybundle.com/users/<number>.  (HYLLY_STORYBUNDLE_USER)
+# storybundle_user = '12345'
+
+# Your own rules files (what Hylly goes by when it guesses from names: docs/rules.md, hylly rules): a folder of them,
+# or one file. Default: the rules folder next to this file. A folder every computer reads, such as rules\ in the library's
+# curation folder, makes them all build the same catalog.  (HYLLY_RULES)
+# rules = '\\NAS\Books\curation\rules'
+
+# The library server (hylly serve): its only options. What's typed on hylly serve is for that one run in the foreground;
+# a server in the background, restarted or started at logon takes these. Restart the server after changing them.
+[server]
+# What the library calls itself: in the browser's tab, its heading, at the login, on the home screen, in the e-reader feed.
+name = "Library"
+# Where it listens: "127.0.0.1", this computer only, as it comes; "0.0.0.0", every IPv4 address, for the tablets and
+# e-readers at home; "::", every address, IPv6 too (and IPv4 where the system lets it); or one address of this computer's.
+# hylly serve --lan listens on every IPv4 address for that one run.
+listen = "127.0.0.1"
+# The one port. A tunnel or proxy (Tailscale Serve or Funnel, cloudflared, nginx) points at it too.
+port = 8770
+# Every request logs in, wherever it comes from: hylly user add NAME (the first user is the owner).
+# One line per request in access.log, next to this file, kept for 30 days.
+access_log = true
+# The address people use, in full: the start, hylly server status, the Server page, the one-time links for other
+# devices and hylly doctor show it, and the server answers to its name. What "tailscale serve status" shows, say, or your
+# own domain behind a proxy. Unset, other devices are shown this computer's own address on the home network while
+# listen reaches beyond this computer, and none while it listens here only.
+# address = "https://YOUR-PC.YOUR-TAILNET.ts.net"
+# The proxies and tunnels whose forwarding headers count: for who sent a request (the lockout after wrong passwords,
+# the access log), whether it came over HTTPS (Secure cookies) and the name the browser used. From anyone else they are
+# ignored, as anyone can type them. As it comes, this computer's own; add a proxy elsewhere, a container's network, say,
+# never every address (0.0.0.0/0). Each must set X-Forwarded-For or add to it (nginx: $proxy_add_x_forwarded_for), and
+# never pass on the one the visitor sent: one that hands on no sender, or one left out of this list, makes all its
+# visitors one sender to the lockout, so a stranger's wrong passwords lock everyone out. hylly doctor says when it sees
+# either.
+trusted_proxies = ["127.0.0.0/8", "::1"]
+# The one header a trusted proxy names the sender in. Tailscale Serve and Funnel and most proxies add it at the end of
+# X-Forwarded-For; cloudflared sets CF-Connecting-IP.
+proxy_header = "X-Forwarded-For"
+# Names the server answers to besides those it answers already: localhost, any address itself, this computer's own name
+# (YOUR-PC) and YOUR-PC.local, .lan, .home, .home.arpa, .localdomain and YOUR-PC.YOUR-TAILNET.ts.net, and address's name.
+# Another name of yours, behind a proxy, goes here.
+# allowed_hosts = ["books.example.org"]
+# Its periodic jobs: the nightly copy of the database and the settings, and the alarms' look every minute with the daily
+# summary. "internal": the server runs them itself, once a minute. "external": it leaves them to "hylly server jobs",
+# which runs what's due and ends, for a systemd timer (examples/hylly-jobs.timer), cron or Task Scheduler to start every
+# minute; the nightly copy it starts as a program of its own. What only the running server can do (its own alarms held
+# back, its address at home, the update check) it does either way. With "internal", hylly server jobs runs nothing.
+jobs = "internal"
+# Where this Hylly's source is, which the Source links lead to: in the library page's account menu, on the login page
+# and in the help's Licences and source. Hylly's own as it comes. A changed version run for others names where its own
+# source is, as Hylly's licence, the AGPL, asks of it.
+# source_url = "https://github.com/janisc/hylly"
+
+# Alarms about the server: a real user's wrong passwords, a new device, many downloads,
+# changed users; and a daily summary. They always go to bell.log (the server page shows the latest).
+# These are the defaults; restart the server after changing them. "hylly bell test" sends a test.
+[bell]
+# Push to your phone with the free ntfy app (https://ntfy.sh): pick a long random topic nobody can guess, and subscribe
+# to it in the app. Its address is as good as a password for reading the alarms, so it isn't put here but in a file of
+# its own: https://ntfy.sh/ and the topic, alone, in secrets/ntfy-url in the settings folder. Or your own ntfy server's
+# address, with its token, if it wants one, in secrets/ntfy-token beside it. "hylly bell" says where they're read.
+toast = true                # a notification on this computer
+wrong_passwords = 3         # wrong passwords for a real user within 15 minutes; 0 = no alarm
+downloads_per_hour = 10     # different files one login (or address) gets within an hour; 0 = no alarm
+new_devices = true          # a login from a kind of device not seen before for that user
+library_missing = 5         # minutes the library can't be reached before an alarm; 0 = no alarm
+quiet_minutes = 60          # the same alarm again at most this often
+alarms_per_hour = 10        # all alarms together sent out, ten times that a day; the others stay in bell.log; 0 = only there
+remote_detail = "counts"    # what the phone gets, through ntfy: counts and kinds; "full": names, addresses and file names too,
+                            # and text strangers chose: the paths asked for without a login, and a name typed at the login
+                            # if it is a real user's (one that isn't is told only by its length)
+daily_summary = 8           # the hour for a summary of the last 24 hours; -1 = none
+command = []                # a program of yours, run for each alarm beside ntfy, for e-mail or a webhook; [] = none.
+                            # Its words, each in quotes, never one line for a shell: ["mail", "-s", "Library alarm",
+                            # "ann@example.org"]. It gets what the phone gets on its standard input and in its environment
+                            # (HYLLY_ALARM_TITLE, HYLLY_ALARM_TEXT, HYLLY_ALARM_PRIORITY, HYLLY_ALARM_TIME), and has 15
+                            # seconds. On Windows, the program by its full path. Neither it nor a file its words name
+                            # may be in Hylly's own folders or the library: the server can write there. The help's
+                            # Alarms tells more
+
+# The e-reader feed (/ereader/opds on the server), for e-ink readers: which titles it lists, and the file each offers.
+# These are the defaults; restart the server after changing them.
+[ereader_feed]
+kinds = ["book", "tech"]             # also possible: "comic", "manual", "rpg"
+formats = []                         # the first one a title has is offered; []: those of ereader under [download] that
+                                     # are books flowing to the screen (EPUB, AZW3, MOBI...); ["epub", "pdf"] allows PDFs
+max_mb = 63                          # bigger files are mostly image-heavy
+skip_tablet = true                   # leave out titles Hylly suggests reading on a tablet (by their kind, [devices] below)
+# A title you put in the feed yourself (hylly set ereader always) offers the first of formats, then of ereader under
+# [download], that it has, of any size: so the e-reader's list decides, a PDF, a comic file or plain text among them.
+# PDFs are offered only from these sources, by their folders' names: an e-reader has no sandbox, and KOReader's MuPDF is
+# older than the one with the fix for a crafted PDF. "any": from everywhere.
+pdf_from = ["humble", "storybundle", "drivethrurpg"]
+
+# The format a title is kept in, best first: the first on its kind's list that is offered, and of it the largest file.
+# A kind's own list, else its device's: tablet for a kind read on a tablet (comics and RPG books, as they come: device
+# under [kinds.X] in the rules, kinds.toml), ereader for every other. Each kind in the rules has a list here, a kind your
+# rules add too. "largest" takes the largest file of the formats after it (of any, when none of them is offered);
+# nothing on the list offered, the largest file. Humble's titles are downloaded so (the other shops' come as they
+# are), and the same order picks a title's main file, read for its details and cover, and the book read inside a ZIP.
+# These are the defaults; hylly settings show shows what is in effect, and hylly humble download --dry-run what a
+# change would download. A title downloaded already stays in its format while it is offered, so a change here
+# downloads nothing again, nor a better format the shop adds later (every Humble download counts those):
+# hylly set format changes a title's. The e-reader feed takes ereader as the server starts: hylly server restart.
+[download]
+ereader = ["epub", "azw3", "mobi", "azw", "prc", "fb2", "pdf", "djvu", "cbz", "cbr", "cb7", "txt"]   # books, tech books, manuals
+tablet = ["cbz", "cbr", "cb7", "largest", "pdf", "epub"]   # comics: CBZ first; else the PDF or EPUB, the larger
+book = []                            # a kind's own list, as rpg below; []: its device's
+tech = []
+comic = []
+manual = []
+rpg = ["pdf", "cbz", "cbr", "cb7", "largest", "epub"]   # RPG books: the PDF, which keeps the print layout; []: its
+                                                        # device's list, tablet while [kinds.rpg] device = "tablet"
+size_tie = 0.95                      # "largest": files this near the largest count as as large, the first listed wins
+language = ""                        # "": the file whose label names no language; or one of [languages] in the
+                                     # rules, such as "german" (hylly rules show kinds)
+unsure = "guess"                     # where the rules are unsure (several PDFs, say): "guess" takes their guess and
+                                     # asks you after (hylly decide); "ask" holds that file back until you answer
+# For a Kindle that gets its books copied by USB, AZW3 and MOBI first, as it reads those that way and not EPUB; in
+# place of the ereader line above:
+#   ereader = ["azw3", "mobi", "azw", "prc", "epub", "fb2", "pdf", "djvu", "cbz", "cbr", "cb7", "txt"]
+# For a Kobo, EPUB first, then MOBI and PDF, which it reads too; in place of the ereader line above:
+#   ereader = ["epub", "mobi", "pdf", "azw3", "azw", "prc", "fb2", "djvu", "cbz", "cbr", "cb7", "txt"]
+
+# Where a title is best read, by its kind and its main file: worked out for every title, of every shop and of each of
+# your own folders; a ZIP package by the book inside it. Where each kind goes is its own, device under [kinds.X] in the
+# rules (comics and RPG books on a tablet, tech books either, the rest on an e-reader: hylly rules show kinds); these
+# make a title a tablet's whatever its kind. The Device filter shows it, and the e-reader feed leaves out the tablet
+# ones. These are the defaults.
+[devices]
+fixed_layout = "tablet"              # a PDF, DjVu or comic file (a fixed layout); also "either" or "ereader"
+image_heavy_mb = 21                  # a bigger text file is probably full of pictures: a tablet
+
+# The reader in the library page. The default:
+[reader]
+cache_gb = 10                        # the server's disk, for the pages it has drawn and comics unpacked whole
+cache_folder = ""                    # where they are kept, by its full path, a folder of its own on another disk say;
+                                     # "": Hylly's own cache folder. In it Hylly uses pages and drawn, and removes only
+                                     # the folders it made there: anything else is left as it is
+book_fonts = true                    # false: the browser refuses the font files books bring (the program's own still work)
+word_meanings = true                 # false: holding a word asks Wiktionary and Wikipedia nothing, and the word box has only
+                                     # Bookmark, for those logged in
+memory_mb = 128                      # pages the server keeps in its memory, 16 to 16384; it also keeps to half of what's free
+pages_ahead = 5                      # pages the browser fetches before you get to them, 0 to 30; 0: it reads nothing ahead
+pages_ahead_fast = 9                 # and when you're turning fast, 0 to 60
+sharp_ahead = 2                      # sharp pictures of the next pages, when reading at the screen's width, 0 to 5
+tiles_ahead = 6                      # the page strip's pictures near you, 0 to 30
+draw_ahead = 32                      # pages the server draws before they're asked for, at most, 0 to 200; 0: none
+
+# Looking up details online (hylly lookup). These are the defaults.
+[lookups]
+enabled = true                       # false: no source is asked at all, by hylly lookup, hylly catalog --lookup or
+                                     # the Inbox; what was found before stays
+order = []                           # the sources asked, in this order, such as ["openlibrary", "googlebooks"]: one
+                                     # left out isn't asked. []: every one, in the order hylly lookup --help names them
+accept = 0.8                         # a match that scores less (0 to 1) isn't used
+none_days = 180                      # a title nothing was found for is asked again after this many days
+contact = ""                         # a way to reach you, sent with each question to the sources; none by default
+
+# Stars for titles, 1 to 5, and a few words if you like, given in the library page and shown to everyone who sees it,
+# with the names of those who gave them. A name is a login, so they need users (hylly user add). The default:
+[reviews]
+who = "off"                          # who may give stars and write: "borrower" (everyone logged in), "reader" (everyone
+                                     # but borrowers), "librarian" or "owner"; "off": nobody, and none show. What was
+                                     # given is kept while it's off
+moderation = "off"                   # "on": words wait for an owner to look at them first, but an owner's own; "borrowers":
+                                     # only a borrower's wait; "off": they show at once. Stars never wait
+
+# How the library page looks: its themes (hylly theme list). Each has a light and a dark set, and everyone picks one
+# in the account menu, where Auto, Light and Dark are too. A theme of your own goes in the themes folder beside this
+# file. The default:
+[look]
+theme = "hylly"                      # the library's own, until someone picks another
+themes = []                          # those that may be picked, such as ["hylly", "clear"]; []: all of them
+
+# Running the commands on another computer: the help's "From another computer". As it comes, they run here.
+[remote]
+# On a computer that isn't the server: the server computer, which owns the library's data. Every command typed here
+# then runs there, over ssh, with its output here; copy, backup, restore, demo, commands and settings stay here, and so
+# do hylly jobs stop copy and hylly jobs stop backup, and any command given --here before it (hylly --here COMMAND).
+# Only this section is read to know where a command runs: a mistake elsewhere in this file is the server's to say.
+# hylly -H HOST and HYLLY_REMOTE name the server instead of this, for one command or for a terminal. A long job
+# starts there on its own, so closing the window doesn't stop it. The server computer must run Linux or macOS for this:
+# Windows' own ssh server reads the command in another way, so a name with a space arrives wrong, and a long job would
+# end with the connection. A Windows server computer refuses such a command, and runs nothing of it.
+ssh = ''          # its name for ssh, such as 'server': an alias in ~/.ssh/config, or user@host
+programs = ''     # the folder hylly is in there, such as '~/.local/bin', if ssh doesn't find it by its name
+
+# Programs Hylly uses. 7-Zip, for CBR comics: on Windows by its full path, by default the one below. On Linux and
+# macOS the default is "": 7z, else 7zz, on the PATH; a name alone is looked for on the PATH there too. Most CBR
+# comics need its RAR part, which some systems' packages leave out: hylly doctor says whether this one has it.
+[tools]
+# sevenzip = 'C:\Program Files\7-Zip\7z.exe'
+
+# hylly backup: a second copy of the library on another disk (the help's "A backup on another disk"). The default:
+[backup]
+target = ''          # the backup's folder, by its full path, such as 'E:\Hylly backup' or '/mnt/backup/hylly': then a
+                     # plain hylly backup, as a timer runs it (examples/hylly-backup.timer), goes there, and so does
+                     # hylly backup check. "": none, so hylly backup TARGET names it; the one typed always wins
+keep = {}            # how many of its zips stay, newest first, as restic's forget counts them: the newest zip of each of
+                     # the latest days, weeks and months that have one, such as { daily = 7, weekly = 4, monthly = 12 },
+                     # and the oldest zip while a count has some left. Only after a backup whose zip is whole, never
+                     # the zip it has just made, and only the backups' own zips, by their names: thinned.txt in saved/
+                     # says which went, when and why; hylly backup --dry-run says which would go. {}: every zip stays.
+                     # The books never go
+
+# The Inbox (the help's "The Inbox"): a folder you drop books in, whatever they are and wherever they came from, which
+# the server empties into the library once a minute (or hylly server jobs on its timer, with jobs = "external" under
+# [server], and beside a server walled in by examples/hylly.service): each book, once it has stayed the same for two
+# minutes, is copied into the folder of yours its kind belongs in, checked, looked up and catalogued, and only then
+# removed from there; what can't be taken goes into its Not added folder, with a note why. Its folders say more: the
+# first is the book's collection; one named for a kind (Comics, Manuals, RPG, Tech, Books) says its kind, and the next
+# one down is its collection then; one whose name starts with # gives it a tag (#To read); deeper ones stay folders.
+# hylly add --inbox makes a pass by hand, and asks before its first. The default:
+[inbox]
+folder = ''          # the Inbox, by its full path, such as '/srv/inbox' or 'D:\Inbox'; "": none
+folders = []         # more Inboxes, each by its full path, each read the same way, such as ['/srv/scans']
+into = {}            # which folder of yours each kind's books go to, such as { default = "collections", rpg = "rpg" }:
+                     # default for every kind it doesn't name. {}: comics to comics and manuals to manuals, as the
+                     # rules give those kinds folders, and every other book to books. A book a kind's folder in
+                     # the Inbox names (RPG, Tech) is kept as that kind, as your correction of it would be, where
+                     # the folder it goes to would make it another
+lookup = true        # false: its books aren't looked up online
+
+# Your own folders. Every folder at the top of the library that isn't a shop's (humble, storybundle, drivethrurpg,
+# itchio) or Hylly's own (catalog, state, curation, superseded, or a name starting with _) is read as it is: its name
+# is its source, its first subfolder a collection; comics\ holds comics and manuals\ manuals. A section per folder
+# says more; every key is optional:
+# [folders.ebooks]
+# label = "My e-books"                # the source's name in the library page and the feeds
+# kind = "book"                       # what its files are: one of the kinds in the rules (book, tech, rpg, comic, manual)
+# kinds = { "Graphic Novels" = "comic", "Programming" = "tech" }   # subfolders whose files are another kind, by name
+#                                     # in any case; an entry that names no subfolder there is told once
+# genres = true                       # the first subfolder is the genre: the one its words find in the rules, else
+#                                     # its name; a book outside a subfolder gets its genre as any title
+# named = true                        # the file names are the books' own titles: "Title (Series Book 2)" gives the series
+# first = true                        # its copy leads when a title is in several places, and it is looked up first
+# For hylly add ebooks, which copies books in, each copy checked (the originals are only read):
+# copy_from = 'C:\Users\you\Books'      # where they come from
+# list = 'C:\Users\you\Books\add-list.csv'  # file,category rows, like examples\add-list.csv; without it, all of them

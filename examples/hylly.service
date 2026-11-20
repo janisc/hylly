@@ -1,0 +1,125 @@
+# The library server as a system-wide service with walls around it, for a Linux computer that serves the internet.
+# Of your folders it sees only the library, Hylly's own folders (its settings only to read, and neither the shops'
+# logins nor what long jobs said) and the program; it can gain no rights, and it can't reach other programs through
+# their sockets. A flaw in it could still change the library and Hylly's records, read what any user may in /etc and
+# /usr, and use the network. The help tells more ("The library server").
+#
+# hylly serve --service-file, run as the user the server is to run as, prints this file for its own computer, filled in
+# from the settings: that user, the library, Hylly's own folders, the program and the port, with the commands that
+# install it; it installs nothing, and writes nothing of its own. This copy is for made-up ones: the user someone, the
+# library in /srv/books, Hylly's folders where Linux keeps them for someone (hylly settings places lists them), and the
+# program where uv tool install puts it.
+#
+# The port: the server listens on one, [server] port in the settings, 8770 as it comes, and the walls let it bind that
+# one alone (SocketBindAllow, below). A port of your own in the settings goes there too, or the server can't start.
+# Nothing else in it listens.
+#
+# By hand, in a copy of your own: put in your user for "someone", your library for /srv/books (its parent, under
+# TemporaryFileSystem, hides the rest of that disk), where the program is, Hylly's folders if they aren't these
+# (HYLLY_HOME, a folder's own variable such as HYLLY_DATA_DIR, or an XDG folder (XDG_CONFIG_HOME, XDG_DATA_HOME,
+# XDG_STATE_HOME, XDG_CACHE_HOME), if you set one for that user, goes in an Environment= line too, as a service sees
+# none of them otherwise), and the port. Every folder below must be there before the server starts, or it doesn't start,
+# rather than start with a wall missing: any hylly command run as that user makes them. The server's options are the
+# settings, as for any server in the background. Then, with the server stopped (hylly server stop) and no start at logon
+# of your own (hylly server autostart off prints how to take one away):
+#   sudo cp hylly.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now hylly
+# Its messages: journalctl -u hylly, and server.log in the state folder (hylly logs server). hylly doctor says when the
+# one installed doesn't match the settings: the user it runs the server as, the library, the port.
+#
+# A service made from this file when Hylly kept everything in ~/.local/share/Hylly names that one folder instead, and its
+# program's folder as WorkingDirectory: it goes on working as it is, as Hylly keeps using that folder, all in one, for
+# as long as it holds Hylly's files. hylly serve --service-file prints one for that folder too.
+[Unit]
+Description=Hylly library server, walled in
+After=network-online.target
+Wants=network-online.target
+RequiresMountsFor=/srv/books
+# A crash loop stops here, and a few restarts on purpose don't
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+User=someone
+Group=someone
+# What the server makes (covers, caches, the nightly copies in the library) is readable by all and writable by it alone,
+# systemd's own 0022. Only if others in its group must change those files too, as on a library shared with Samba to a
+# group, does it take this line:
+#UMask=0002
+# In the data folder, which is there inside the walls: not where the program is
+WorkingDirectory=/home/someone/.local/share/hylly
+# hyllyd, as uv tool install put it there (the help's install, with tool-constraints.txt: the versions that were tested).
+# It writes server.log itself, in the state folder, which BindPaths below lets it write: it opens the file as its own
+# user, inside the walls, and keeps it short. Its messages go to the journal too. Not StandardOutput=append: root opens
+# that, outside the walls, and follows a link that the server could put in the log's place.
+ExecStart=/home/someone/.local/share/uv/tools/hylly/bin/hyllyd --in-background
+# The flag tells the server where it is. It restarts (hylly server restart, or Restart on the server page) by ending
+# with code 75: that is no failure, and the system starts it again.
+Environment=HYLLY_SYSTEM_SERVICE=1
+Environment=PYTHONUNBUFFERED=1
+Restart=on-failure
+RestartSec=2
+SuccessExitStatus=75
+RestartForceExitStatus=75
+
+# The disk: only these exist for it. 7-Zip, for CBR comics, if it's in your home folder, needs a line of its own.
+TemporaryFileSystem=/srv:ro /run:ro
+BindPaths=/srv/books
+ProtectHome=tmpfs
+# Hylly's data (the database), its state (logs, locks, notes) and its cache (the reader's pages), which the server writes
+BindPaths=/home/someone/.local/share/hylly /home/someone/.local/state/hylly /home/someone/.cache/hylly
+# The reader's cache in a folder of its own ([reader] cache_folder), on another disk, say: the - lets the server start while
+# that disk is away (it then keeps the pages in memory only). Restart the server once the disk is connected again.
+#BindPaths=-/mnt/fast/hylly-cache
+# The shops' logins and the lookups' keys: hyllyd needs none of them, and doesn't even see the folder
+InaccessiblePaths=/home/someone/.local/share/hylly/logins
+# Nor what the jobs started from another computer said, so that no link the server could leave there leads it elsewhere
+InaccessiblePaths=/home/someone/.local/state/hylly/job-output
+# The settings folder: settings.toml, your rules and themes, and the alarms' ntfy address and token in secrets/. The
+# server reads them and never writes them, so nothing it could be made to write steers your own commands, nor where
+# their notes and the token go. The folder is bound, not each file, so the server sees a change to settings.toml
+# whichever editor makes it, one that writes a new file in its place too.
+BindReadOnlyPaths=/home/someone/.config/hylly
+# The program, as uv tool install put it there. One installed from a checkout of the source (--editable) needs that
+# folder too, in a BindReadOnlyPaths= line of its own.
+BindReadOnlyPaths=/home/someone/.local/share/uv/tools/hylly
+# The Python that uv installed, if it did (uv python list says where): the tool's own is a link to it
+BindReadOnlyPaths=-/home/someone/.local/share/uv/python
+# Names on the network, where systemd-resolved does them; the - lets a computer without it start too
+BindReadOnlyPaths=-/run/systemd/resolve
+
+# Other processes of your own: without this, /proc would lead through them to the whole disk
+PrivateUsers=yes
+
+# The rest of the computer
+ProtectSystem=strict
+InaccessiblePaths=-/etc/ssh -/etc/samba -/var/lib/samba -/var/lib/tailscale -/var/log -/dev/pts
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectProc=invisible
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+# No AF_UNIX: that's what keeps it from the sockets of other programs, on the disk or not
+RestrictAddressFamilies=AF_INET AF_INET6 AF_NETLINK
+# The one port the server may listen on: [server] port in the settings (8770 as it comes). Change it here too, or the
+# server can't start (its log says the system refused the port). Tailscale Serve, Funnel or a proxy point at this port.
+SocketBindAllow=tcp:8770
+SocketBindDeny=any
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target

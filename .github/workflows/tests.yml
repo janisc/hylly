@@ -1,0 +1,39 @@
+name: tests
+# The lint rules, and the whole test suite on Linux, Windows and macOS: on every push and pull request, or by hand.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  lint:
+    # The lint rules, [tool.ruff] in pyproject.toml, with the ruff uv.lock names
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --locked --python 3.14
+      - run: uv run ruff check .
+  tests:
+    # Each system on the newest Python, and Linux on the oldest too: Hylly runs on 3.11 to 3.14 (requires-python in
+    # pyproject.toml, updates.PYTHONS)
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.14"]
+        include:
+          - os: ubuntu-latest
+            python: "3.11"
+    runs-on: ${{ matrix.os }}
+    # A run that hangs ends after an hour, not GitHub's six: the whole suite takes several minutes, a slow system's
+    # runner a few times as long. A test that hangs has its threads' stacks written out after five minutes
+    # (faulthandler_timeout in pyproject.toml).
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --locked --python ${{ matrix.python }}
+      - run: uv run python -m pytest -q
