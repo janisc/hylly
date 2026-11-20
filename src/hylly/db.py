@@ -863,12 +863,24 @@ def _place_token(path: Path, instead: bool = False) -> str:
     return said
 
 
+MARKER_TRIES = 10  # owner's looks at a marker that Windows won't open while another program replaces it
+
+
 def owner(root: Path) -> dict:
     """The library's owner_file, read and judged in this one place: the marker as it says, its id there.
     FileNotFoundError when there's none; ValueError when it doesn't name one (damaged, half written, a list); any other
     OSError when it can't be read, a share that has gone among them (share_is_gone), which each caller raises or not as
-    it must."""
-    marker = json.loads(owner_file(root).read_text(encoding="utf-8"))
+    it must. On Windows a marker that another program is putting in its place can't be opened for that moment (a
+    PermissionError): it's looked at again a few times first, as the writing does (storage.atomic_write)."""
+    for n in range(MARKER_TRIES):
+        try:
+            text = owner_file(root).read_text(encoding="utf-8")
+            break
+        except PermissionError:
+            if os.name != "nt" or n == MARKER_TRIES - 1:
+                raise
+            time.sleep(0.05)
+    marker = json.loads(text)
     if not isinstance(marker, dict) or not isinstance(marker.get("id"), str):
         raise ValueError("no id in it")
     return marker

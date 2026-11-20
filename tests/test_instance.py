@@ -472,6 +472,11 @@ def made_up_unit(**changed) -> str:
     return instance.walled_unit(**{**given, **changed})
 
 
+# A systemd unit's paths are Linux's: Windows' own, with a drive and backslashes, can't stand in for them
+linux_paths = pytest.mark.skipif(os.name == "nt", reason="a systemd unit's paths are Linux's")
+
+
+@linux_paths
 def test_the_example_service_is_the_one_printed_for_its_made_up_user_and_names_its_port():
     """examples/hylly.service, below its header, is what hylly serve --service-file prints for its made-up user, library,
     folders and program: the one the doctor compares against, and the example, can't drift apart. Its header names the
@@ -485,6 +490,7 @@ def test_the_example_service_is_the_one_printed_for_its_made_up_user_and_names_i
     assert "8770" in header and "[server] port in the settings" in header and "SocketBindAllow" in header
 
 
+@linux_paths
 def test_the_walled_service_takes_its_folders_and_port_from_what_it_s_given():
     unit = made_up_unit(user="ann", group="readers", library="/mnt/Lantern Wolf/100% books", port=8780,
                         environment={"HYLLY_LIBRARY": "/mnt/Lantern Wolf/100% books"}, cache_folder="/mnt/fast/pages")
@@ -498,6 +504,7 @@ def test_the_walled_service_takes_its_folders_and_port_from_what_it_s_given():
     assert "TemporaryFileSystem=/run:ro" in at_home and f"BindPaths={SOMEONE}/Books" in at_home
 
 
+@linux_paths
 def test_all_in_one_folder_the_settings_own_files_in_it_are_walled_one_by_one():
     """The one folder is the server's to write, so the settings' own files in it are walled read-only each:
     settings.toml and secrets/ without a -, so that one not there stops the start rather than leave the server to make
@@ -547,6 +554,7 @@ def test_a_port_is_allowed_as_systemd_allows_it(allow, deny, family, port, allow
     assert instance._port_allowed(allow, deny, family, port) is allowed
 
 
+@linux_paths
 def test_what_the_walls_leave_of_a_path_goes_by_the_deepest_wall_that_names_it(tmp_path):
     """Shortest path first, as systemd mounts them: a bind of the library, or of a folder it's in, shows it again over
     the parent a TemporaryFileSystem hid; at one path the more restrictive wins; ProtectHome hides the home folders, by
@@ -581,6 +589,7 @@ def test_what_the_walls_leave_of_a_path_goes_by_the_deepest_wall_that_names_it(t
     assert instance._what_shows("/srv/books", found(walls + "BindPaths=%h/books\n")) is None  # a specifier: can't be told
 
 
+@linux_paths
 def test_a_value_a_unit_can_t_hold_is_refused_and_the_working_folder_is_written_without_quotes():
     with pytest.raises(SystemExit, match="line break") as e:
         made_up_unit(environment={"HYLLY_LIBRARY": "/srv/books\nUser=root"})

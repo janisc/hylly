@@ -3,6 +3,11 @@
 What changed in each version of Hylly, the newest first. How each part works is in the help page, the library page's
 **Help**.
 
+## Unreleased
+
+- On Windows, a command or the server reading the library's marker just as another program writes it waits a
+  moment for it, instead of saying the marker can't be read.
+
 ## 0.1.0 (2026-11-20)
 
 The first release. Hylly downloads the e-books, comics and RPG books you own at Humble Bundle, StoryBundle, DriveThruRPG

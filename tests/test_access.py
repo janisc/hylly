@@ -1021,7 +1021,7 @@ def test_the_tail_of_a_log_starts_at_a_whole_line_and_ends_lines_at_line_breaks_
     assert access.tail(tmp_path / "none.log", 5) == [] and access.tail(tmp_path, 5) == []
     # a read that begins exactly at a line's start keeps that line: twelve of 541 letters or so, 6,496 bytes in all
     twelve = [f"L{i:02d} " + "x" * (536 if i else 540) for i in range(12)]
-    path.write_text("an older line\n" + "".join(line + "\n" for line in twelve), encoding="utf-8")
+    path.write_bytes(("an older line\n" + "".join(line + "\n" for line in twelve)).encode())  # \n as the log has it, on Windows too
     assert path.stat().st_size - (200 * 12 + 4096) == len("an older line\n")  # where the read begins
     assert access.tail(path, 12) == twelve
 

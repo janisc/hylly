@@ -464,6 +464,8 @@ def test_a_test_run_that_hangs_says_where_and_ends():
 # ---- a system-wide service, with walls around the server ------------------------------------------------------
 
 posix_only = pytest.mark.skipif(sys.platform == "win32", reason="its signal is for Linux and macOS")
+# A systemd unit's paths are Linux's: Windows' own, with a drive and backslashes, can't stand in for them
+linux_paths = pytest.mark.skipif(os.name == "nt", reason="a systemd unit's paths are Linux's")
 
 
 def wide_systemd(monkeypatch, tmp_path, service="[Service]\nUser=me\n", main_pid="4242", enabled=True, answers=True):
@@ -569,7 +571,7 @@ def made_up_home(monkeypatch, tmp_path, system: str, by_spelling: bool = True, *
         monkeypatch.delenv(name, raising=False)
     for name, value in environment.items():
         monkeypatch.setenv(name, value)
-    monkeypatch.setattr(paths, "_same_folder", (lambda one, other: one == other) if by_spelling else REAL_SAME_FOLDER)
+    monkeypatch.setattr(paths, "_same_folder", (lambda one, other: str(one) == str(other)) if by_spelling else REAL_SAME_FOLDER)
     paths.forget_one_folder()  # decided once for each process: afresh for each made-up home
     return home
 
@@ -674,7 +676,7 @@ def test_the_usual_folders_are_either_way_a_hylly_has_them_with_nothing_set(monk
     monkeypatch.setenv("HYLLY_HOME", str(one))  # not there yet: still the user's own
     assert paths.usual_settings_folder()
     monkeypatch.setenv("HYLLY_HOME", str(home / ".local" / "share" / "hylly"))  # all in one, in the data folder: another
-    assert not paths.usual_settings_folder()
+    assert paths.usual_settings_folder() is (os.name == "nt")  # but Windows' paths take hylly for Hylly, as its disks do
     monkeypatch.delenv("HYLLY_HOME")
     for variable in ("HYLLY_DATA_DIR", "HYLLY_STATE_DIR", "HYLLY_CACHE_DIR", "HYLLY_LOGINS_DIR"):
         monkeypatch.setenv(variable, str(tmp_path / "a disk of its own" / variable))
@@ -687,6 +689,7 @@ def test_the_usual_folders_are_either_way_a_hylly_has_them_with_nothing_set(monk
     assert not paths.usual_settings_folder() and paths.usual_settings_folder(settings_file_counts=False)
 
 
+@linux_paths
 def test_a_folder_of_its_own_for_the_data_keeps_the_start_at_logon_and_the_walled_service_s_guard(monkeypatch, tmp_path, usual_folder):
     """A variable of the data, the state, the cache or the logins, set in the user's own shell, keeps this the usual
     Hylly: the start at logon is printed, and carries it, so that the server it starts keeps those kinds where the
@@ -1343,6 +1346,7 @@ def a_linux_of_ann_s(monkeypatch, tmp_path, port: int = 8780) -> Path:
     return library
 
 
+@linux_paths
 def test_the_walled_service_is_printed_for_this_computer_from_the_settings_and_nothing_is_written(monkeypatch, tmp_path):
     library = a_linux_of_ann_s(monkeypatch, tmp_path)
     home = Path.home()
@@ -1386,6 +1390,7 @@ def test_the_walled_service_is_printed_only_on_linux_and_only_for_the_usual_hyll
         instance.service_file()
 
 
+@linux_paths
 def test_hylly_serve_service_file_prints_it_on_standard_output_and_the_steps_on_standard_error(monkeypatch, tmp_path, capsys):
     """The file alone on standard output, so that > hylly.service is the file; the sudo lines on standard error. Beside a
     walled service installed and running, which no hylly serve may start another of, it prints all the same; with an
@@ -1428,6 +1433,7 @@ def walled_and_compared(monkeypatch, tmp_path, unit: str, port: int = 8780, drop
     return instance.service_differences()
 
 
+@linux_paths
 def test_the_walled_service_printed_and_installed_as_it_is_matches_the_settings(monkeypatch, tmp_path):
     a_linux_of_ann_s(monkeypatch, tmp_path)
     printed = instance.service_file()[0]
@@ -1462,6 +1468,7 @@ def test_a_walled_service_saying_the_same_another_way_is_no_difference(monkeypat
         shutil.rmtree(tmp_path / "etc")
 
 
+@linux_paths
 def test_a_walled_service_that_differs_from_the_settings_is_named_by_its_line_and_the_fix(monkeypatch, tmp_path):
     from hylly import doctor
 
@@ -1508,6 +1515,7 @@ def test_a_walled_service_file_that_can_t_be_read_is_compared_with_nothing(monke
 
 
 
+@linux_paths
 def test_the_walled_service_starts_hyllyd_as_uv_tool_install_put_it_and_sees_its_python(monkeypatch, tmp_path):
     """The program's own folder, read only, and the folder of uv's Pythons, which the tool's python links to; hyllyd
     beside the tool's python, else that python with -P -m hylly.daemon. A Python of the system's needs no line."""
@@ -1527,6 +1535,7 @@ def test_the_walled_service_starts_hyllyd_as_uv_tool_install_put_it_and_sees_its
     assert program == [instance._python(), *instance.DAEMON] and found is None
 
 
+@linux_paths
 def test_a_walled_service_s_library_is_the_one_its_server_gets_never_this_shell_s(monkeypatch, tmp_path):
     """The service's own Environment= HYLLY_LIBRARY, else the settings' library: a HYLLY_LIBRARY in the shell the doctor
     runs in is no difference, and the words say which library it is. What can't be told from the files, an
@@ -1588,6 +1597,7 @@ def test_a_drop_in_folder_that_can_t_be_listed_compares_nothing(monkeypatch, tmp
         folder.chmod(0o700)
 
 
+@linux_paths
 def test_all_in_one_folder_the_printed_service_starts_without_rules_or_themes(monkeypatch, tmp_path):
     """settings.toml and secrets/, which hylly settings edit and every command make, must be there; the rules and
     themes folders, which nothing makes, are walled where they are there, so a service printed without them starts."""

@@ -270,8 +270,8 @@ def test_a_marker_as_hylly_wrote_it_before_that_cant_be_tied_just_now_still_coun
 def test_a_marker_as_hylly_wrote_it_before_naming_another_database_is_still_refused(tmp_path):
     root = tmp_path / "library"
     as_hylly_left_it_before(root)
+    db.close_all()  # first: Windows moves no file that's open
     shutil.move(db.file(), tmp_path / "theirs.db")  # that database is another computer's: this one has none of it
-    db.close_all()
     with pytest.raises(db.NotHere, match="first stop the server on"):
         curation.load(root)
     assert "token" not in json.loads(db.owner_file(root).read_text(encoding="utf-8"))

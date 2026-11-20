@@ -155,6 +155,7 @@ def test_an_id_with_a_semicolon_or_quotes_is_quoted_where_it_must_be_never_cut_a
     assert [shoplist.parts(x) for x in ("lanternwolf", "humble:", "humble:x", ":x:y", "itchio:123")] == [None] * 5
 
 
+# Short names: pytest names each test in an environment variable, which Windows holds to 32,767 letters
 @pytest.mark.parametrize("raw, words", [
     (b"", "is empty"),
     (b"\n\n  \n", "is empty"),
@@ -169,7 +170,7 @@ def test_an_id_with_a_semicolon_or_quotes_is_quoted_where_it_must_be_never_cut_a
     (b"\xff\xfe" + "id;download\n".encode("utf-16-le") + b"\x00\xd8\x41\x00", "isn't that all through"),  # a lone surrogate
     (b"id;download\n" + b'"humble:a:' + b"b" * 140_000 + b'";(X)\n', "can't be read as a shop list"),  # past the csv limit
     (b'{"id": "' + b"x" * 300_000 + b'", "download": 1}', "can't be read as a shop list"),  # a first line past it
-])
+], ids=lambda value: repr(value)[:40])
 def test_a_file_that_isn_t_a_list_or_has_no_id_or_download_column_stops_before_anything_and_says_which(raw, words):
     stops(raw, words)
 

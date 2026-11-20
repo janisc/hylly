@@ -342,10 +342,12 @@ def test_a_folder_that_names_no_tag_is_said_once_and_its_books_come_in_without_o
     long = "#" + "x" * (curation.TAG_MAX + 1)
     book = drop(box, f"{long}/Moonwake.epub")
     drop(box, "#/Lantern Wolf.epub")
-    drop(box, "# /Hedge Lore.epub")
+    spaced = os.name != "nt"  # Windows makes no folder whose name ends in a space
+    if spaced:
+        drop(box, "# /Hedge Lore.epub")
     drop(box, "#Kept/Tide Tables.epub")
     said = a_pass(capsys, root) + a_pass(capsys, root)
-    assert said.count("names no tag a book can have") == 3 and f"{box / long} names no tag" in said
+    assert said.count("names no tag a book can have") == 2 + spaced and f"{box / long} names no tag" in said
     assert not book.exists() and "tg" not in titles(root)["ebooks/Moonwake.epub"]
     assert [p.name for p in box.iterdir()] == ["#Kept"]  # #, "# " and the long one gone with their books
     drop(box, f"{long}/Hedge Lore, again.epub")  # its folder made again: said again, as of a book that comes back

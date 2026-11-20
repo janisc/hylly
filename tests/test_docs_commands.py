@@ -346,7 +346,7 @@ def test_a_packaged_app_s_copy_of_the_settings_is_mentioned_by_the_doctor(tmp_pa
     assert doctor.app_copies() == [copy]
     monkeypatch.setenv("HYLLY_HOME", str(tmp_path / "a-sandbox" / ".." / "Hylly"))  # however it's written
     assert doctor.app_copies() == [copy]
-    (tmp_path / "Hylly").mkdir()
+    (tmp_path / "Hylly").mkdir(exist_ok=True)  # on Windows the commands above made it, LOCALAPPDATA being tmp_path
     try:
         (tmp_path / "a-link").symlink_to(tmp_path / "Hylly", target_is_directory=True)
     except OSError:

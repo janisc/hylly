@@ -107,6 +107,8 @@ def test_a_stopped_or_killed_run_is_said_not_to_have_ended_not_taken_for_the_run
     while not runs.current("storybundle"):
         assert child.poll() is None and time.monotonic() < deadline
         time.sleep(0.1)
+    running = runs.current("storybundle")["pid"]  # child's own, but on Windows: a venv's python.exe starts the real one
+    assert running == child.pid or os.name == "nt"
     cli.main(["jobs"])
     out = capsys.readouterr().out
     assert "Running: A StoryBundle download" in out and "didn't end" not in out and "All 12 files done" not in out
@@ -118,7 +120,7 @@ def test_a_stopped_or_killed_run_is_said_not_to_have_ended_not_taken_for_the_run
     assert "didn't end (stopped or killed)." in out and "All 12 files done" not in out and "exit code 0" not in out
     cli.main(["jobs", "--json"])
     (last,) = [r for r in json.loads(capsys.readouterr().out)["last"] if r["job"] == "storybundle"]
-    assert last["ended"] is False and last["exit"] is None and last["pid"] == child.pid
+    assert last["ended"] is False and last["exit"] is None and last["pid"] == running
 
 
 def test_a_watched_run_refused_after_taking_its_lock_leaves_the_record_before_it(capsys):

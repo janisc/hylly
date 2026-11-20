@@ -494,8 +494,9 @@ def test_a_shop_list_goes_to_and_from_the_server_through_ssh_s_own_streams(on_an
     for words, said in ((["humble", "list"], "would write humble-list.csv there: hylly humble list - > humble-list.csv "
                                              "writes it here"),
                         (["list", "mine.csv"], "would write mine.csv there: hylly list - > mine.csv writes it here"),
-                        (["download", "mine.csv", "--dry-run"], "can't see mine.csv on this one: hylly download - --dry-run "
-                                                                "< mine.csv sends it there")):
+                        (["download", "mine.csv", "--dry-run"], "can't see mine.csv on this one: " + (
+                            "Get-Content mine.csv | hylly download - --dry-run" if paths.WINDOWS  # PowerShell has no <
+                            else "hylly download - --dry-run < mine.csv") + " sends it there")):
         with pytest.raises(SystemExit) as refused:
             cli.main(words)
         assert refused.value.code == exits.USAGE and said in str(refused.value) and on_another_computer == [], words

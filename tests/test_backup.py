@@ -84,6 +84,9 @@ OLD_COPY = ('[server]\nname = "Made-up Library"\n\n[bell]\nntfy = ""  # ' + OLD_
             '# ntfy = ""  # ' + OLD_NOTE + '\nwrong_passwords = 3  # the phone: (left out of this copy), with (left out of this '
             'copy)\n')  # a nightly copy of the settings an older Hylly made, as its rewriter left them
 posix_only = pytest.mark.skipif(sys.platform == "win32", reason="the rights of Linux and macOS")
+# A disk gone from the folder it was mounted at, played by renaming that folder while the backup has files open in it:
+# Windows renames no folder with a file open in it, and a disk gone there takes its drive letter along
+mount_folder = pytest.mark.skipif(os.name == "nt", reason="a disk gone from its mount folder, as Linux and macOS have it")
 
 
 def computer(monkeypatch, folder: Path) -> None:
@@ -337,7 +340,7 @@ def test_with_a_folder_for_each_kind_a_backup_takes_the_settings_and_never_the_s
     config, state, cache = tmp_path / "config", tmp_path / "state", tmp_path / "cache"
     (config / "settings.toml").write_text('[server]\nname = "Made-up Library"\n', encoding="utf-8")
     for folder, name in ((config / "rules", "mine.toml"), (config / "themes", "mine.toml"), (state, "kept.toml"),
-                         (cache / "pages", "kept.toml"), (tmp_path / "data" / "logins", "keys.toml"),
+                         (cache / "pages", "kept.toml"), (paths.logins_dir(), "keys.toml"),
                          (state / "job-output", "said.toml")):
         folder.mkdir(parents=True, exist_ok=True)
         (folder / name).write_text('comicvine = "A-MADE-UP-SECRET"\n' if "logins" in str(folder) else "# made up\n", encoding="utf-8")
@@ -347,7 +350,8 @@ def test_with_a_folder_for_each_kind_a_backup_takes_the_settings_and_never_the_s
     assert paths.settings_file() == config / "settings.toml" and db.file() == tmp_path / "data" / db.FILE
     found, missed = backup._settings_to_save()
     assert sorted(inside for _, inside in found) == ["rules/mine.toml", "settings.toml", "themes/mine.toml"] and missed == []
-    for wrong in (state, cache / "pages", tmp_path / "data" / "logins", state / "job-output"):
+    for wrong in (state, cache / "pages", paths.logins_dir(), state / "job-output"):  # the logins: with the data, or on
+        # Windows in the install's one folder of before, which LOCALAPPDATA holds there
         (config / "settings.toml").write_text(f"rules = '{wrong}'\n", encoding="utf-8")
         the_settings.reload()
         found, missed = backup._settings_to_save()
@@ -523,6 +527,7 @@ def test_an_earlier_copy_set_aside_keeps_its_checksum_and_the_check_reads_it_aga
     check(top)  # the last line for a place counts
 
 
+@mount_folder
 def test_the_check_of_the_earlier_copies_holds_while_the_disk_is_away_as_the_books_check_does(library, top, settings,
                                                                                                monkeypatch, tmp_path):
     """A disk that drops as the earlier copies in changed/ are read again isn't taken for copies gone: the check holds
@@ -719,6 +724,7 @@ def test_a_share_that_goes_away_while_zipping_is_tried_again(library, top, setti
     assert len(goes) == 2 and made.is_file() and not missed
 
 
+@mount_folder
 def test_once_the_books_are_copied_a_backup_holds_while_its_disk_is_away_and_writes_nothing_where_it_was(library, top, settings,
                                                                                                          monkeypatch, tmp_path):
     """A disk dropping between the last book and the zip (the records' fresh copy may take minutes) leaves an empty
@@ -745,6 +751,7 @@ def test_once_the_books_are_copied_a_backup_holds_while_its_disk_is_away_and_wri
     assert held == [[]] and len(backup.saved_zips(top)) == 2 and "Last finished" in (top / backup.NOTE).read_text(encoding="utf-8")
 
 
+@mount_folder
 def test_a_book_s_earlier_copy_waits_for_the_disk_and_makes_no_folder_where_it_was(library, top, settings, monkeypatch,
                                                                                     tmp_path, today):
     """Setting a changed book's earlier copy aside makes changed/<day>/ and the folders below it: only while the disk
@@ -949,6 +956,7 @@ def test_a_restore_writes_over_nothing_and_goes_on(library, top, settings, tmp_p
     assert sorted(p.name for p in other.rglob("*")) == ["mine.txt", "notes"]
 
 
+@mount_folder
 def test_a_restore_holds_while_the_new_library_s_disk_is_away_and_unpacks_nothing_where_it_was(library, top, settings,
                                                                                                monkeypatch, tmp_path):
     """As a backup does before its zip: the books copied, and the new folder's disk gone, so the mark the copy left

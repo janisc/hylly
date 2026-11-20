@@ -466,6 +466,18 @@ def lines(answers: dict[str, dict]) -> str:
     return "{\n" + ",\n".join(f"{json.dumps(k)}: {json.dumps(v, sort_keys=True)}" for k, v in answers.items()) + "\n}\n"
 
 
+# What these say names this computer's own folders and commands, which on Windows are its own (a drive, PowerShell's
+# words): there, their words, and so their size and whether they go packed, aren't the snapshot's, which Linux and
+# macOS share. Everything else of them still is.
+THIS_SYSTEM_S = ("GET /server/status ", "GET /database/tables ", "GET /catalog/help.html ")
+
+
+def as_compared(key: str, answer: dict | None) -> dict | None:
+    if os.name == "nt" and answer and key.startswith(THIS_SYSTEM_S):
+        return {k: v for k, v in answer.items() if k not in ("body", "packed", "vary")}
+    return answer
+
+
 def test_every_address_answers_each_caller_as_pinned(library, serving, request, tmp_path_factory):
     """The walk (the module's docstring), against tests/routes.json. An address written with an escape is the same
     address: the feeds' too, which pick the e-reader's feed by the address decoded, as its page is read."""
@@ -488,7 +500,7 @@ def test_every_address_answers_each_caller_as_pinned(library, serving, request, 
         ROUTES.write_text(now, encoding="utf-8")
     pinned = json.loads(ROUTES.read_text(encoding="utf-8"))
     differ = [f"{key}: {pinned.get(key)} -> {answers.get(key)}" for key in dict.fromkeys([*pinned, *answers])
-              if pinned.get(key) != answers.get(key)]
+              if as_compared(key, pinned.get(key)) != as_compared(key, answers.get(key))]
     assert not differ, (f"{len(differ)} of {len(answers)} answers aren't as tests/routes.json has them (was -> now). "
                         "If the change is meant, write it again and commit it with the change: uv run python -m "
                         "pytest tests/test_routes.py --new-snapshot.\n" + "\n".join(differ[:20]))
