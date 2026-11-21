@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hylly: every book you own, on one shelf</title>
+<meta name="description" content="Hylly is a home library for the e-books, comics and RPG books you own: it downloads them from the shops, keeps them in one folder of your own, finds their covers and details, and lets you read them on any screen.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Hylly: every book you own, on one shelf">
+<meta property="og:description" content="A home library for the e-books, comics and RPG books you own. Free and open source, for Windows, macOS and Linux.">
+<meta property="og:url" content="https://janisc.github.io/hylly/">
+<meta property="og:image" content="https://janisc.github.io/hylly/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0C447C">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230C447C'/%3E%3Crect x='22' y='28' width='12' height='46' rx='2' fill='%23F1EFE8'/%3E%3Crect x='36' y='34' width='12' height='40' rx='2' fill='%23FAC775'/%3E%3Crect x='50' y='26' width='11' height='48' rx='2' fill='%23F0997B'/%3E%3Crect x='64' y='30' width='12' height='44' rx='2' fill='%2385B7EB' transform='rotate(16 70 74)'/%3E%3Crect x='18' y='74' width='64' height='6' rx='3' fill='%23B5D4F4'/%3E%3C/svg%3E">
+<style>
+@font-face { font-family: "Literata"; src: url("fonts/literata-normal-200-900-latin.woff2") format("woff2"); font-weight: 200 900; font-display: swap; }
+@font-face { font-family: "Atkinson Hyperlegible"; src: url("fonts/atkinson-normal-400-latin.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Atkinson Hyperlegible"; src: url("fonts/atkinson-normal-700-latin.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+:root {
+  --blue: #0C447C; --blue-2: #155a9e; --sky: #B5D4F4; --sky-2: #85B7EB; --sun: #FAC775; --coral: #F0997B; --paper: #F1EFE8;
+  --bg: #faf9f5; --bg-2: #f1efe8; --card: #ffffff; --ink: #1d232b; --ink-2: #4b5563; --line: #e2ded3;
+  --serif: "Literata", Georgia, "Times New Roman", serif;
+  --sans: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #12161c; --bg-2: #181e26; --card: #1d242e; --ink: #edf0f4; --ink-2: #aeb7c3; --line: #2b3440; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 18px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--blue-2); }
+@media (prefers-color-scheme: dark) { a { color: var(--sky); } }
+.wrap { width: min(1180px, 100% - 40px); margin: 0 auto; }
+h1, h2, h3 { font-family: var(--serif); line-height: 1.15; letter-spacing: -.01em; margin: 0 0 .5em; }
+h2 { font-size: clamp(30px, 4vw, 44px); font-weight: 750; }
+h3 { font-size: 22px; font-weight: 700; }
+p { margin: 0 0 1em; }
+.lead { font-size: 20px; color: var(--ink-2); max-width: 46em; }
+code { font-size: .9em; background: var(--bg-2); padding: .1em .35em; border-radius: 5px; }
+
+/* the top */
+header.top { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line); }
+header.top .wrap { display: flex; align-items: center; gap: 22px; height: 60px; }
+.brand { display: flex; align-items: center; gap: 10px; font: 750 22px var(--serif); color: var(--ink); text-decoration: none; }
+.brand svg { width: 32px; height: 32px; }
+nav { display: flex; gap: 20px; margin-left: auto; font-size: 16px; }
+nav a { color: var(--ink-2); text-decoration: none; }
+nav a:hover { color: var(--ink); }
+nav a.gh { color: var(--ink); font-weight: 700; }
+@media (max-width: 760px) { nav a:not(.gh) { display: none; } }
+
+/* the hero */
+.hero { background: radial-gradient(1200px 500px at 70% -10%, #1d6bb4 0%, transparent 60%), var(--blue); color: #fff; padding: 72px 0 0; overflow: hidden; }
+.hero .wrap { display: grid; gap: 40px; }
+.hero h1 { font-size: clamp(42px, 6.4vw, 76px); font-weight: 800; max-width: 12em; margin-bottom: .3em; }
+.hero h1 em { font-style: normal; color: var(--sun); }
+.hero .lead { color: #dbe8f6; font-size: clamp(18px, 2vw, 22px); }
+.hero .lead i { font-family: var(--serif); }
+.buttons { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin: 26px 0 12px; }
+.button { display: inline-flex; align-items: center; gap: 8px; padding: 13px 22px; border-radius: 12px; font-weight: 700; text-decoration: none;
+  font-size: 17px; }
+.button.main { background: var(--sun); color: #3a2a06; }
+.button.main:hover { background: #ffd58f; }
+.button.quiet { color: #fff; border: 2px solid rgba(255, 255, 255, .35); }
+.button.quiet:hover { border-color: #fff; }
+.small { font-size: 15px; color: #b9cfe6; }
+.hero .shot { margin: 30px auto -6px; width: min(1080px, 100%); }
+
+/* device frames, drawn: a browser window, a tablet, a phone */
+.browser { border-radius: 14px; background: var(--card); overflow: hidden; box-shadow: 0 30px 80px rgba(0, 0, 0, .35), 0 0 0 1px rgba(0, 0, 0, .08); }
+.browser .bar { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 16px; background: #e8e5dd; }
+@media (prefers-color-scheme: dark) { .browser .bar { background: #2a313b; } }
+.browser .bar i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; }
+.browser .bar i:nth-child(2) { background: #febc2e; } .browser .bar i:nth-child(3) { background: #28c840; }
+.browser .bar span { margin: 0 auto; transform: translateX(-30px); width: min(46%, 360px); height: 24px; border-radius: 7px; background: rgba(255, 255, 255, .75);
+  font-size: 13px; line-height: 24px; text-align: center; color: #6b7280; }
+@media (prefers-color-scheme: dark) { .browser .bar span { background: rgba(255, 255, 255, .08); color: #aeb7c3; } }
+.tablet { background: #16171a; border-radius: 34px; padding: 18px; box-shadow: 0 30px 70px rgba(0, 0, 0, .3), inset 0 0 0 2px #3a3c42; }
+.tablet img { border-radius: 14px; }
+.phone { position: relative; background: #16171a; border-radius: 54px; padding: 12px; box-shadow: 0 30px 60px rgba(0, 0, 0, .3), inset 0 0 0 2px #3a3c42;
+  width: 100%; max-width: 330px; }
+.phone .screen { border-radius: 43px; overflow: hidden; background: var(--status, #f4f2ec); }
+.phone .status { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px 0 36px; font: 700 15px var(--sans);
+  color: var(--status-ink, #111); }
+.phone .status b { width: 24px; height: 11px; border: 1.5px solid currentColor; border-radius: 3px; position: relative; opacity: .85; }
+.phone .status b::after { content: ""; position: absolute; inset: 1.5px 5px 1.5px 1.5px; background: currentColor; border-radius: 1px; }
+.phone::before { content: ""; position: absolute; top: 22px; left: 50%; width: 30%; height: 28px; transform: translateX(-50%); background: #000; border-radius: 20px; }
+
+/* the story */
+section { padding: 90px 0; }
+.story { display: grid; grid-template-columns: 1fr; gap: 24px; }
+.story p { font-size: 20px; max-width: 40em; }
+.story .first::first-letter { font: 800 3.2em/0.8 var(--serif); float: left; margin: .08em .1em 0 0; color: var(--blue-2); }
+@media (prefers-color-scheme: dark) { .story .first::first-letter { color: var(--sky); } }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 34px; }
+@media (max-width: 860px) { .steps { grid-template-columns: 1fr; } }
+.step { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 26px; }
+.step .n { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; font: 800 20px var(--serif); margin-bottom: 14px; color: #2a1d05; }
+.step:nth-child(1) .n { background: var(--sun); } .step:nth-child(2) .n { background: var(--coral); } .step:nth-child(3) .n { background: var(--sky-2); }
+.step p { color: var(--ink-2); font-size: 17px; margin: 0; }
+
+/* the features: words beside a picture */
+.feature { display: grid; grid-template-columns: 5fr 7fr; gap: 56px; align-items: center; }
+.feature.flip { grid-template-columns: 7fr 5fr; }
+.feature.flip .words { order: 2; }
+@media (max-width: 900px) { .feature, .feature.flip { grid-template-columns: 1fr; gap: 30px; } .feature.flip .words { order: 0; } }
+.feature .words p { color: var(--ink-2); font-size: 19px; }
+.kicker { font: 700 14px var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--blue-2); margin-bottom: 10px; }
+@media (prefers-color-scheme: dark) { .kicker { color: var(--sky-2); } }
+.alt { background: var(--bg-2); }
+.phones { display: flex; gap: 26px; justify-content: center; align-items: flex-start; }
+.phones .phone:nth-child(2) { margin-top: 60px; }
+@media (max-width: 560px) { .phones .phone:nth-child(2) { display: none; } }
+ul.ticks { list-style: none; padding: 0; margin: 0; color: var(--ink-2); font-size: 17px; }
+ul.ticks li { padding-left: 30px; position: relative; margin: 0 0 10px; }
+ul.ticks li::before { content: ""; position: absolute; left: 2px; top: .45em; width: 14px; height: 8px; border-left: 3px solid var(--blue-2);
+  border-bottom: 3px solid var(--blue-2); transform: rotate(-45deg); }
+@media (prefers-color-scheme: dark) { ul.ticks li::before { border-color: var(--sky-2); } }
+
+/* yours */
+.yours { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; margin-top: 30px; }
+@media (max-width: 760px) { .yours { grid-template-columns: 1fr; } }
+.yours div { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 26px; }
+.yours p { color: var(--ink-2); font-size: 17px; margin: 0; }
+
+/* built by AI */
+.ai { background: var(--blue); color: #e6eef8; }
+.ai h2 { color: #fff; }
+.ai p { font-size: 19px; max-width: 44em; }
+.ai a { color: var(--sun); }
+
+/* get it */
+.get { text-align: center; }
+.get .lead { margin: 0 auto 10px; }
+.get .buttons { justify-content: center; }
+.get .button.quiet { color: var(--ink); border-color: var(--line); }
+.links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 26px; margin-top: 26px; font-size: 16px; }
+footer { border-top: 1px solid var(--line); padding: 34px 0 50px; color: var(--ink-2); font-size: 15px; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 30px; justify-content: space-between; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Hylly">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#0C447C"/><rect x="22" y="28" width="12" height="46" rx="2" fill="#F1EFE8"/><rect x="36" y="34" width="12" height="40" rx="2" fill="#FAC775"/><rect x="50" y="26" width="11" height="48" rx="2" fill="#F0997B"/><rect x="64" y="30" width="12" height="44" rx="2" fill="#85B7EB" transform="rotate(16 70 74)"/><rect x="18" y="74" width="64" height="6" rx="3" fill="#B5D4F4"/></svg>
+      Hylly
+    </a>
+    <nav>
+      <a href="#story">The story</a>
+      <a href="#library">Library</a>
+      <a href="#reader">Reader</a>
+      <a href="#yours">Yours</a>
+      <a href="#get">Get it</a>
+      <a class="gh" href="https://github.com/janisc/hylly">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <h1>Every book you own, <em>on one shelf.</em></h1>
+      <p class="lead">Hylly (<i>shelf</i> in Finnish) is a home library for your e-books, comics and RPG books. It downloads what
+        you've bought from the shops, keeps it safe in one folder of your own, finds the covers and details, and lets you
+        read on any screen in the house, or away.</p>
+      <div class="buttons">
+        <a class="button main" href="https://github.com/janisc/hylly#quick-start">Get started</a>
+        <a class="button quiet" href="https://github.com/janisc/hylly">See it on GitHub</a>
+      </div>
+      <p class="small">Free and open source · Windows, macOS and Linux · on your own computer</p>
+    </div>
+    <div class="shot browser">
+      <div class="bar"><i></i><i></i><i></i><span>Library</span></div>
+      <img src="shots/desktop-library.webp" width="2400" height="1500" alt="The library page: covers in a grid, Continue reading at the top, and filters by kind, genre and device at the side.">
+    </div>
+  </div>
+</div>
+
+<section id="story">
+  <div class="wrap story">
+    <div>
+      <div class="kicker">The story</div>
+      <h2>It starts with a bundle.</h2>
+      <p class="first">Then another. A few years on, there are hundreds of books, comics and game manuals spread over four
+        shop accounts, three download folders and an old laptop. Some are there twice. Some never got downloaded. Nobody
+        remembers which volume comes next.</p>
+      <p>Hylly brings them home. It goes through your shop accounts, downloads everything you own, checks every file, and
+        keeps it all in one folder that's yours: on your computer, a NAS or a USB disk, exactly as the shops delivered it.
+        On top of it, a catalog gives each title its cover, author, series and genre, and a library page lets everyone in
+        the house browse, search and read.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="n">1</div>
+        <h3>Gather</h3>
+        <p>Downloads what you own on Humble Bundle, StoryBundle, DriveThruRPG and itch.io, and picks up again after a
+          break. Every file is checked before it's kept. Books from anywhere else go in the Inbox folder.</p>
+      </div>
+      <div class="step">
+        <div class="n">2</div>
+        <h3>Organise</h3>
+        <p>Covers, series in volume order, genres and your own tags, looked up where the files say nothing. Nothing is
+          renamed or moved. Two copies of one book? Compare them side by side and keep one.</p>
+      </div>
+      <div class="step">
+        <div class="n">3</div>
+        <h3>Read</h3>
+        <p>In the browser, on a phone, a tablet or a TV, or in your reading apps and e-readers. At home, or away from
+          it, privately.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="library" class="alt">
+  <div class="wrap feature">
+    <div class="words">
+      <div class="kicker">The library</div>
+      <h2>Browse it like a bookshop.</h2>
+      <p>Covers, series together in volume order, and what you're in the middle of right at the top. Filter by kind,
+        genre, device or where it came from, search everything at once, and keep shelves of your own: only the comics,
+        say.</p>
+      <ul class="ticks">
+        <li>Your own reading list, lists and places, for each person</li>
+        <li>Light or dark, and big enough for a TV across the room</li>
+        <li>Correct a title, an author or a series right in the page</li>
+      </ul>
+    </div>
+    <div class="tablet">
+      <img src="shots/ipad-library.webp" width="2000" height="1390" loading="lazy" alt="The library page on a tablet held sideways, in the dark theme.">
+    </div>
+  </div>
+</section>
+
+<section id="reader">
+  <div class="wrap feature flip">
+    <div class="words">
+      <div class="kicker">The reader</div>
+      <h2>Open a book, and read.</h2>
+      <p>A reader is built into the page. E-books flow to your screen in the font and size you like, two pages side by
+        side when there's room, with contents, search, bookmarks and the meaning of a word when you hold it.</p>
+      <p>Hylly keeps your place, so the phone in bed picks up where the laptop left off.</p>
+    </div>
+    <div class="browser">
+      <div class="bar"><i></i><i></i><i></i><span>The Lantern Keepers</span></div>
+      <img src="shots/desktop-reader.webp" width="2400" height="1500" loading="lazy" alt="An e-book open in the reader: chapter one across two pages.">
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap feature">
+    <div class="words">
+      <div class="kicker">Comics and PDFs</div>
+      <h2>A page at a time.</h2>
+      <p>Comics and PDFs come one page at a time, so even a huge one opens at once. Two pages side by side on a wide screen,
+        a swipe or a tap to turn, and zoom for the small print.</p>
+      <p>EPUB, MOBI, AZW3, FB2, PDF, CBZ and CBR, all in the one reader.</p>
+    </div>
+    <div class="tablet">
+      <img src="shots/ipad-comic.webp" width="2000" height="1390" loading="lazy" alt="A comic open on a tablet, two pages side by side.">
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap feature flip">
+    <div class="words">
+      <div class="kicker">On every screen</div>
+      <h2>In your pocket, too.</h2>
+      <p>Add the library to your phone's or tablet's home screen and it opens like an app. Reading apps that speak OPDS
+        (Panels and Yomu on the iPad, KOReader on e-readers and Android) see the whole library as well, and download
+        the books you pick to read offline.</p>
+      <p>An e-ink reader gets a feed of its own, with only the books that suit its screen.</p>
+    </div>
+    <div class="phones">
+      <div class="phone"><div class="screen"><div class="status"><span>9:41</span><b></b></div>
+        <img src="shots/iphone-library.webp" width="900" height="1951" loading="lazy" alt="The library on a phone: Continue reading and covers in two columns."></div></div>
+      <div class="phone" style="--status: #faf9f6"><div class="screen"><div class="status"><span>9:41</span><b></b></div>
+        <img src="shots/iphone-reader.webp" width="900" height="1951" loading="lazy" alt="An e-book open on a phone."></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="yours" class="alt">
+  <div class="wrap">
+    <div class="kicker">Yours</div>
+    <h2>Your books, your computer.</h2>
+    <p class="lead">Hylly is a program on your own computer, not a service. There is no account with us and no cloud of
+      ours: nothing goes to its makers.</p>
+    <div class="yours">
+      <div><h3>Kept as they came</h3><p>Every file stays exactly as the shop delivered it, checked when it arrived, in a
+        folder you can open, copy and back up. If a shop closes, you still have every book.</p></div>
+      <div><h3>Everyone their own</h3><p>Each person in the house gets their own login, reading places, reading list
+        and lists, on every device they use.</p></div>
+      <div><h3>Away from home, privately</h3><p>Through Tailscale your own phones, tablets and laptops reach the library
+        from anywhere, over HTTPS, without opening a port on your router.</p></div>
+      <div><h3>It tells you</h3><p>A server page shows what's running and who's connected, alarms come to your phone, and
+        a backup keeps the library on a second disk.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="ai">
+  <div class="wrap">
+    <div class="kicker" style="color: var(--sun)">How it's made</div>
+    <h2>Built by AI.</h2>
+    <p>Hylly is built by AI: its code, tests and documentation were written by Claude, in Claude Code.</p>
+    <p>An AI assistant can help you with it too: run its commands, set up your library and its server and check them
+      with <code style="background: rgba(255,255,255,.12)">hylly doctor</code>, or add a shop that's missing. It can help,
+      and it can be wrong, as anyone can: read what it's about to do, and keep a backup.</p>
+  </div>
+</section>
+
+<section id="get" class="get">
+  <div class="wrap">
+    <h2>Get started.</h2>
+    <p class="lead">Hylly runs on Windows, macOS and Linux. One command installs it, with uv; then point it at your
+      books, or log in to your shops and let it fetch them.</p>
+    <div class="buttons">
+      <a class="button main" href="https://github.com/janisc/hylly#quick-start">The quick start</a>
+      <a class="button quiet" href="https://github.com/janisc/hylly">The code on GitHub</a>
+    </div>
+    <div class="links">
+      <a href="https://github.com/janisc/hylly/blob/main/CHANGELOG.md">What's new</a>
+      <a href="https://github.com/janisc/hylly/blob/main/docs/roadmap.md">Ideas for later</a>
+      <a href="https://github.com/janisc/hylly#privacy">Privacy</a>
+      <a href="https://github.com/janisc/hylly/issues">Report a problem</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Hylly is free software, under the <a href="https://github.com/janisc/hylly/blob/main/LICENSE">AGPL-3.0</a>.</span>
+    <span>The books in these pictures are made up, covers and all.</span>
+  </div>
+</footer>
+</body>
+</html>

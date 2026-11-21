@@ -2,6 +2,8 @@
 
 **Hylly** (Finnish for *shelf*) is a home library for the e-books and comics you own. It downloads them from the shops you bought them from, keeps them safe in one folder, finds their covers and details, and lets you read them in the browser or in your reading apps, at home or away. It is built by AI: its code, tests and documentation were written by Claude.
 
+**[See it in pictures](https://janisc.github.io/hylly/):** the library, the reader, and what it's for.
+
 It is a toolbox: a small Python program, `hylly`, with one command per job, plus a few free parts and services it builds on. You can use only the parts you need. It calls each thing by one name, always the same: [the glossary](docs/glossary.md) says what each means, from *shop* and *kind* to the *library feed*.
 
 An AI assistant can help you with it too: run its commands, set up your library and its server and check them with `hylly doctor`, or add a shop or a lookup source that's missing. Hylly comes with notes and skills for one ([AGENTS.md](AGENTS.md), [the playbooks](docs/playbooks.md) and the skills in `.claude/skills`), and its commands say what happened in a way an assistant can read. It can help, and it can be wrong, as anyone can: read what it's about to do, above all before anything is removed or a shop's account is changed, and keep a backup.
