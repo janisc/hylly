@@ -629,6 +629,7 @@ def _turn(key: tuple, patience: float | None):
 
 
 def _ask(path: str, stamp: tuple, where, head: dict, data: bytes = b"", patience: float | None = None) -> tuple[dict, bytes]:
+    path = os.path.abspath(path)  # the worker runs in Python's own folder: a path from this process's means nothing there
     key = (path, tuple(stamp))
     with _turn(key, patience):
         if _left_alone(key, where):

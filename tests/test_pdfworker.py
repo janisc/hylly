@@ -79,6 +79,15 @@ def test_a_page_comes_from_a_worker_not_from_this_process(tmp_path, workers):
     assert [w.process.pid != os.getpid() for w in pdfworker.POOL.idle] == [True]
 
 
+def test_a_pdf_named_from_this_folder_is_found_by_the_worker_in_its_own(tmp_path, workers, monkeypatch):
+    """The worker runs in a folder of its own, Python's: a PDF named by a path from this process's folder, as hylly
+    catalog --library some/folder names them, is found all the same, not taken for one that can't be read just now."""
+    make_pdf(tmp_path / "a.pdf")
+    monkeypatch.chdir(tmp_path)
+    st = os.stat("a.pdf")
+    assert pdfworker.pages("a.pdf", (st.st_mtime_ns, st.st_size)) == 3
+
+
 def test_a_worker_is_used_again_and_keeps_the_file_open(tmp_path, workers):
     path = make_pdf(tmp_path / "a.pdf")
     reader.count(path)
