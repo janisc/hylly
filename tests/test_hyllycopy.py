@@ -2520,6 +2520,52 @@ def test_a_long_copy_says_it_started_with_an_estimate_and_how_far_when_asked(sou
     assert [n[0] for n in notes][1:] == ["HyllyCopy: how far"] and "of 1,000 files" in notes[1][1]
 
 
+def pace_after(looks, every=15.0):
+    """A copy's pace after the looks of the watchdog (files, bytes) it had, one each `every` seconds, and its costs."""
+    pace, now, files, size = hc._Pace(), 1000.0, 0, 0
+    for more_files, more_bytes in looks:
+        now, files, size = now + every, files + more_files, size + more_bytes
+        pace.seen(now, files, size, 1000.0)
+    return pace
+
+
+def test_a_copy_that_begins_with_thousands_of_small_files_doesn_t_count_its_big_ones_by_their_speed():
+    """A backup's first phone note said 444 hours: in its first minutes it had checked 9,346 covers and the like, 88 MB of a
+    library of 750 GB, and the speed in bytes was what they went at. The time left is each file's cost and its bytes' by
+    themselves (_Pace): the small files teach the one, and until a big file has come a byte goes as on a usual disk."""
+    pace = pace_after([(650, 6_300_000)] * 14)  # 3.5 minutes: some 9,100 files, 88 MB
+    hours = pace.left(24_019 - 9_100, 750_000_000_000) / 3600
+    assert 2 < hours < 6, hours  # it took 3.9 hours by the source's speed
+    # then the big ones, at their own speed: 53 MB a second
+    pace = pace_after([(650, 6_300_000)] * 14 + [(12, 800_000_000)] * 40)
+    left = (1_000, 700_000_000_000)
+    files_cost, byte_cost = pace.costs()
+    assert abs(1 / byte_cost / 1e6 - 53.3) < 6 and 0 < files_cost < 0.2
+    assert abs(pace.left(*left) / 3600 - (700e9 / 53.3e6) / 3600) < 1.0
+
+
+def test_a_copy_s_pace_keeps_to_its_files_when_there_are_only_small_ones_and_to_its_bytes_when_only_big_ones():
+    small = pace_after([(300, 300 * 10_000)] * 60)  # 20 a second, 10 KB each
+    assert abs(small.left(6_000, 6_000 * 10_000) - 300) < 60  # 20 a second: 300 s
+    big = pace_after([(1, 1_200_000_000)] * 60)  # 80 MB a second
+    assert abs(big.left(50, 60 * 1_200_000_000) / 60 / 15 - 1) < .15  # 60 more of them at 15 s each
+
+
+def test_a_hold_and_a_look_with_nothing_moved_count_for_nothing_in_the_pace():
+    moving = [(5, 400_000_000)] * 30
+    steady, held = pace_after(moving), hc._Pace()
+    now, files, size = 1000.0, 0, 0
+    for k, (n, b) in enumerate(moving):
+        now, files, size = now + 15, files + n, size + b
+        held.seen(now, files, size, 1000.0)
+        if k == 10:
+            now += 4 * 3600  # an hour-long hold that moved nothing: the looks say nothing
+            for _ in range(20):
+                held.seen(now, files, size, 1000.0)
+                now += 15
+    assert abs(held.left(100, 20_000_000_000) / steady.left(100, 20_000_000_000) - 1) < .05
+
+
 def test_a_second_hold_within_the_hour_has_words_of_its_own(source, target, notes, monkeypatch):
     """HyllyBell holds back the same words within the hour, and the phone's last word would be "going on"."""
     c, clock = clocked(source, target)

@@ -502,6 +502,55 @@ class Notes:
                     self.waiting.pop(0)
 
 
+class _Pace:
+    """How long what's left of a copy takes, as it goes. A file costs time of its own (its name on both sides, its entry,
+    its check) and so does each of its bytes, so the rest is counted by both: files_left x a file's cost + bytes_left x a
+    byte's. Both are learned from what has passed, a look at a time (least squares over them, the latest counting most):
+    thousands of small files teach the one, a big file the other. Going by the bytes or the files alone, whichever said
+    longer, gave hundreds of hours while a copy that began with thousands of covers had yet to reach its first big file.
+    Until a cost has been seen it's a usual disk's (FILE_COST, BYTE_COST), a guess as heavy as PRIOR_FILES files and
+    PRIOR_BYTES bytes; a look in which nothing moved, as on hold, says nothing."""
+
+    FILE_COST, BYTE_COST = 0.02, 1 / 50e6  # seconds: a file's, and a byte's, as at 50 MB a second
+    PRIOR_FILES, PRIOR_BYTES = 200, 500e6
+    KEPT = 0.995  # how much each look leaves of what was learned before: half of it in some 35 minutes of looks
+
+    def __init__(self) -> None:
+        n, b = self.PRIOR_FILES, self.PRIOR_BYTES
+        self.ff, self.bb, self.fb = float(n * n), b * b, 0.0
+        self.ft, self.bt = n * n * self.FILE_COST, b * b * self.BYTE_COST
+        self.last: tuple[float, int, int] | None = None
+
+    def seen(self, now: float, files: int, size: int, began: float) -> None:
+        last, self.last = self.last or (began, 0, 0), (now, files, size)
+        took, more_files, more_bytes = now - last[0], files - last[1], size - last[2]
+        if took <= 0 or (more_files <= 0 and more_bytes <= 0):
+            return
+        for name in ("ff", "bb", "fb", "ft", "bt"):
+            setattr(self, name, getattr(self, name) * self.KEPT)
+        self.ff += more_files * more_files
+        self.bb += more_bytes * more_bytes
+        self.fb += more_files * more_bytes
+        self.ft += more_files * took
+        self.bt += more_bytes * took
+
+    def costs(self) -> tuple[float, float]:
+        """Seconds a file and seconds a byte cost. Neither can be less than nothing: if one comes out so, the other is all."""
+        det = self.ff * self.bb - self.fb * self.fb
+        if det <= 1e-9 * self.ff * self.bb:
+            return 0.0, self.bt / self.bb
+        a, b = (self.ft * self.bb - self.bt * self.fb) / det, (self.bt * self.ff - self.ft * self.fb) / det
+        if a < 0:
+            return 0.0, self.bt / self.bb
+        if b < 0:
+            return self.ft / self.ff, 0.0
+        return a, b
+
+    def left(self, files: int, size: int) -> float:
+        a, b = self.costs()
+        return a * max(files, 0) + b * max(size, 0)
+
+
 class _Job:
     """What copying and checking have in common: the waiting, and the watchdog with its notes."""
 
@@ -640,7 +689,11 @@ class _Job:
         self.say(f"NOTE {heading}: {text}")
         self.notes.tell(f"{self.NAME}: {heading}", text, public or text)
 
+    def _keep_pace(self) -> None:
+        """What a look of the watchdog can learn of the speed. Copying has some."""
+
     def _tick(self) -> None:
+        self._keep_pace()
         now = self.now()
         idle = now - self.last_move
         if idle >= TELL_AFTER and (self.told_at is None or now - self.told_at >= TELL_AGAIN):
@@ -999,6 +1052,10 @@ class Copying(_Job):
         self.first_count = 0
         self.cooling, self.no_keeping, self.other_numbers = False, False, False
         self.total_files = self.total_bytes = self.done_files = self.done_bytes = self.current = 0
+        self.pace = _Pace()
+
+    def _keep_pace(self) -> None:
+        self.pace.seen(self.now(), self.done_files, self.done_bytes + self.current, self.began)
 
     def _leave_out(self, rel: str) -> str | None:
         """A file or folder that a copy of this kind leaves out, and why. hylly backup has some."""
@@ -1678,14 +1735,11 @@ class Copying(_Job):
         return line + (f", {time_words(left, about=True)} to go" if left else "")
 
     def _left(self) -> float:
-        """Going by the bytes and by the files, whichever says longer: both a big file and many small ones take their time."""
-        took = self.now() - self.began
+        """By the time a file costs and the time its bytes do, as they've been so far (_Pace)."""
         done = self.done_bytes + self.current
-        if took < 1 or (not done and not self.done_files):
+        if self.now() - self.began < 1 or (not done and not self.done_files):
             return 0
-        by_bytes = took * (self.total_bytes - done) / done if done else 0
-        by_files = took * (self.total_files - self.done_files) / self.done_files if self.done_files else 0
-        return max(by_bytes, by_files, 0)
+        return self.pace.left(self.total_files - self.done_files, self.total_bytes - done)
 
     def _started_note(self) -> str:
         if not self.total_files:
