@@ -9,6 +9,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import threading
 import time
 from pathlib import Path
@@ -456,18 +457,21 @@ def test_a_send_that_fails_after_the_alarms_look_is_said_and_ends_nothing(tmp_pa
     assert said.out == "Ran what was due: alarms.\n" and "Alarms: 'Users changed' couldn't be sent (KeyError" in said.err
 
 
-def test_a_long_job_started_on_its_own_really_runs_apart(tmp_path, monkeypatch, capfd):
+def test_a_long_job_started_on_its_own_really_runs_apart(tmp_path, monkeypatch):
     """The process itself, as the timer starts it: it takes the job's lock once hylly server jobs has let go of it, runs
-    the job, and says so where hylly server jobs' own words go."""
+    the job, and says so where hylly server jobs' own words go. Those go to a file here: pytest's capture empties its
+    own as it's read, and lost the first letters of the line, so the test never saw it and waited out its minute."""
     monkeypatch.setattr(periodic, "JOBS", tuple(job for job in periodic.JOBS if job.name == "nightly copy"))
     external()
-    found = periodic.once(tmp_path, log=lambda line: None)
+    said = tmp_path / "said.txt"
+    with said.open("w", encoding="utf-8") as own:
+        monkeypatch.setattr(sys, "stdout", own)
+        found = periodic.once(tmp_path, log=lambda line: None)
     assert found["started"] == ["nightly copy"]
-    deadline, out = time.monotonic() + 60, ""
-    while "The server's job 'nightly copy' ran." not in out:
-        assert time.monotonic() < deadline, out
+    deadline = time.monotonic() + 60
+    while "The server's job 'nightly copy' ran." not in said.read_text(encoding="utf-8", errors="replace"):
+        assert time.monotonic() < deadline, said.read_text(encoding="utf-8", errors="replace")
         time.sleep(0.2)
-        out += capfd.readouterr().out
     with periodic.held(periodic.JOBS[0], wait=5) as got:
         assert got  # let go of when it ended
 
