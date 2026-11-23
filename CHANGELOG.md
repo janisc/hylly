@@ -7,6 +7,9 @@ What changed in each version of Hylly, the newest first. How each part works is 
 
 - On Windows, a command or the server reading the library's marker just as another program writes it waits a
   moment for it, instead of saying the marker can't be read.
+- A title's details, your lists and bookmarks fill the screen on a phone or a tablet, with *‹ Library* at the top, and open
+  as a window in the middle of the page on a computer. They no longer scroll sideways: a wide cover had pushed the
+  fifth star off an upright phone.
 - The PDFs of a library given by a relative path (`hylly catalog --library books`) are read: each run took them for
   files that couldn't be read just then.
 

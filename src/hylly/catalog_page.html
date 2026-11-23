@@ -228,9 +228,17 @@ main { padding: 16px; }
 .ca { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .badge { display: inline-block; font-size: 11px; background: var(--accent); color: var(--accent-ink); border-radius: 4px; padding: 0 5px; margin-right: 4px; }
 #more { height: 40px; }
-#detail { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; z-index: var(--z-details); }
-#detail.open { display: block; }
-.sheet { position: absolute; right: 0; top: 0; bottom: 0; width: min(720px, 100%); background: var(--panel); overflow: auto; overscroll-behavior: contain; padding: 22px; box-shadow: -4px 0 20px rgba(0,0,0,.25); }
+/* A title's details, a series, your lists, the bookmarks: one view at a time. On a phone or a tablet it is the whole screen,
+   with a bar at its top that has the way back; on a computer, a pointer that is fine and a window with room for it, it is a
+   popup of one size in the middle of the page, dimmed and blurred behind it. */
+#detail { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none; place-items: center; z-index: var(--z-details); }
+#detail.open { display: grid; }
+.sheet { position: relative; width: 100%; height: 100%; background: var(--panel); overflow: hidden auto; overscroll-behavior: contain; padding: 0 var(--pad) 40px; --sp: 22px; --pad: var(--sp); --cov: 132px; }
+.sheetbar { position: sticky; top: 0; z-index: var(--z-head); display: flex; align-items: center; gap: 8px; margin: 0 calc(-1 * var(--pad)) 14px; min-height: 60px;
+  padding: env(safe-area-inset-top) max(12px, env(safe-area-inset-right)) 0 max(12px, env(safe-area-inset-left)); background: var(--panel); border-bottom: 1px solid var(--line); }
+.sheetbar .close { margin-left: auto; }
+.sheetbar .sheetup, .sheetbar .sheetlib { font-size: 16px; font-weight: 600; min-height: var(--tap); padding: 0 8px; text-decoration: none; }
+.sheetbar .sheetup ~ .sheetlib, .sheetbar .sheetup ~ .close, .sheetbar:not(:has(.sheetup)) .close { display: none; }  /* the way back is enough */
 /* While the details or another dialog is open, the list behind it holds still: a finger on the dimmed part beside it, or a
    scroll run past the end of the dialog's own, would move it (the iPad's Safari showed its scroll bar moving). Its place stays,
    and so does the scroll bar's room, so nothing shifts sideways on a PC. behindDialogs sets held; holdStill, the drags. */
@@ -238,17 +246,19 @@ html.held { overflow: hidden; scrollbar-gutter: stable; }
 /* A mouse dragging the titles (the script's panning): the hand closed, and no words picked on its way */
 html.panning, html.panning * { cursor: grabbing !important; -webkit-user-select: none; user-select: none; }
 #detail, .modal, .box, .picks { overscroll-behavior: contain; }
-.sheet h2 { padding-right: 36px; }  /* clear of the close button, which doesn't take a column of its own */
-.sheet .close { position: absolute; top: 16px; right: 16px; width: var(--tap); height: var(--tap); margin: 0; padding: 0; border: 0; border-radius: 50%; background: var(--chip);
+.sheet .close { width: var(--tap); height: var(--tap); margin: 0; padding: 0; border: 0; border-radius: 50%; background: var(--chip);
                 color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .sheet .close:hover { background: var(--line); color: var(--ink); }
 /* A title's details: the title and Read first, beside the cover, so that Read is in view at once on any screen, however
    much there is to say below it, and an owner's editing controls with it. */
-.dhead { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 18px; align-items: start; }
-.dhead > :first-child { grid-row: 1 / span 2; }
-.dtop, .drest { grid-column: 2; min-width: 0; }
-.dhead img, .dhead .ph { width: 160px; }
-.dhead img.cover { width: auto; min-width: 100px; max-width: 360px; height: 240px; aspect-ratio: auto; object-fit: contain; align-self: flex-start; }  /* whole, as wide as it is */
+.dhead { display: grid; grid-template-columns: var(--cov) minmax(0, 1fr); column-gap: 16px; align-items: start; }
+.dhead > :first-child { grid-row: 1; }
+.dtop { grid-column: 2; min-width: 0; }
+.dhead > .stars, .drest { grid-column: 1 / -1; min-width: 0; }
+.dhead > .stars { margin-top: 8px; }
+.drest { margin-top: 8px; }
+.dhead img, .dhead .ph { width: 100%; }
+.dhead img.cover { width: 100%; height: auto; max-width: 100%; aspect-ratio: auto; object-fit: contain; align-self: flex-start; border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,.18); }  /* whole, as wide as its room */
 .dhead h2 { margin: 0 0 6px; font-size: 20px; line-height: 1.25; }
 .kv { font-size: 13px; color: var(--muted); margin: 2px 0; }
 .kv b { color: var(--ink); font-weight: 600; }
@@ -256,17 +266,37 @@ html.panning, html.panning * { cursor: grabbing !important; -webkit-user-select:
 .files a { color: var(--accent); word-break: break-all; }
 .files li { margin: 4px 0; }
 .btn { font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--chip); color: var(--ink); cursor: pointer; }
-.sheetup { display: block; min-height: 32px; margin: -6px var(--tap) 6px 0; text-align: left; }
 .series-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; margin-top: 12px; }
 .empty { color: var(--muted); padding: 40px 0; text-align: center; }
 .empty.nobooks { grid-column: 1 / -1; }  /* across the titles' columns: a few lines to read, not a card */
 .empty p { max-width: 34em; margin: 8px auto 0; }
-@media (max-width: 560px) {  /* the cover beside the title and Read, the rest across the whole width below them */
-  .dhead { column-gap: 14px; }
-  .dhead > :first-child { grid-row: 1; }
-  .drest { grid-column: 1 / -1; margin-top: 12px; }
-  .dhead img, .dhead .ph { width: 110px; }
-  .dhead img.cover { width: auto; height: auto; min-width: 0; max-width: 42vw; max-height: 190px; }
+@media (min-width: 700px) {  /* a tablet, or a phone on its side: the cover held at the left, and the rest beside it */
+  .sheet { --sp: 36px; --cov: clamp(200px, 30vw, 320px); }
+  .sheet.titled { display: grid; grid-template-columns: var(--cov) minmax(0, 1fr); column-gap: var(--sp); align-content: start; }
+  .sheet.titled > .sheetbar { grid-column: 1 / -1; }
+  .sheet.titled > .dhead { display: contents; }
+  .sheet.titled .dhead > :first-child { grid-column: 1; grid-row: 2 / span 40; position: sticky; top: 76px; align-self: start; }
+  .sheet.titled .dhead img.cover { max-height: calc(100dvh - 100px); }
+  .sheet.titled > :not(.sheetbar, .dhead), .sheet.titled .dtop, .sheet.titled .dhead > .stars, .sheet.titled .drest { grid-column: 2; }
+  .sheet.titled .dtop h2 { font-size: 26px; }
+  .sheet:not(.titled) { --pad: max(var(--sp), calc((100vw - 900px) / 2)); }  /* a list isn't drawn across a whole tablet */
+}
+@media (max-height: 499px) { .sheet { --cov: 200px; } }
+@media (hover: hover) and (pointer: fine) and (min-width: 900px) and (not (max-height: 499px)) {  /* a computer: a popup of one size in the middle of the page */
+  #detail { -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+  .sheet { --sp: 40px; --cov: 290px; width: min(1080px, 100vw - 96px); height: min(820px, 100dvh - 80px); border-radius: 18px; box-shadow: 0 24px 80px rgba(0,0,0,.45); }
+  .sheet:not(.titled) { --pad: max(var(--sp), calc((min(1080px, 100vw - 96px) - 900px) / 2)); }
+  .sheetbar { height: 0; min-height: 0; margin: 0; padding: 0; border: 0; background: none; }
+  .sheetbar .sheetlib { display: none; }
+  .sheetbar .close, .sheetbar:not(:has(.sheetup)) .close { display: flex; position: absolute; top: 14px; right: calc(14px - var(--pad)); }
+  .sheetbar:has(.sheetup) { height: 52px; align-items: flex-end; }
+  .sheetbar .sheetup ~ .close { display: flex; }
+  .sheet.titled .dhead > :first-child, .sheet.titled .dtop { margin-top: 28px; }
+  .sheet:has(.sheetup).titled .dhead > :first-child, .sheet:has(.sheetup).titled .dtop { margin-top: 8px; }
+  .sheet.titled .dhead > :first-child { top: 28px; }
+  .sheet.titled .dhead img.cover { max-height: 440px; }
+  .sheet.titled .dtop h2 { padding-right: 44px; }
+  .sheet:not(.titled) > h2 { padding: 24px 60px 0 0; }
 }
 /* editing tags */
 .linkbtn { border: 0; background: none; color: var(--accent); font: inherit; font-size: 13px; cursor: pointer; padding: 0; text-decoration: underline; }
@@ -293,6 +323,7 @@ span.chip > .x:hover { opacity: 1; }
 /* the first visit's word about shelves. It never stands in the way: a tap on its words goes to what's under them, and closes it */
 #shelftip { position: absolute; top: calc(100% + 9px); left: 0; z-index: var(--z-tip); width: max-content; max-width: min(290px, 100vw - 90px); padding: 10px 12px; border-radius: 12px;
             background: var(--accent); color: var(--accent-ink); box-shadow: 0 8px 24px rgba(0,0,0,.25); font-size: 14px; line-height: 1.35; pointer-events: none; }
+html.held #shelftip { visibility: hidden; }  /* not over the details or another dialog, which it would point into */
 #shelftip::before { content: ""; position: absolute; top: -5px; left: 20px; width: 12px; height: 12px; background: inherit; transform: rotate(45deg); }
 #shelftip b { display: block; margin-bottom: 2px; }
 #shelftip div { display: flex; gap: 6px; justify-content: flex-end; margin-top: 8px; }
@@ -2539,6 +2570,11 @@ function panGlideOn(el, vx, vy) {  // the speeds in px/ms; the same as a zoomed 
 
 // ---- detail ----
 const CLOSE_X = icon("x", 22, ' stroke-width="2.2"');
+// The top of whatever the sheet shows: the way back to what it was opened from, if it was, and ✕. On a phone or a tablet
+// the sheet is the whole screen and this a bar that stays at its top, with ‹ Library where there's no other way back; on a
+// computer it's a popup with ✕ in its corner (.sheetbar). go: one step back (closeSheet), or out of it (hide).
+const sheetTop = (up = "") => `<div class="sheetbar">${up}<button class="linkbtn sheetlib">‹ Library</button><button class="close" aria-label="Close">${CLOSE_X}</button></div>`;
+const wireTop = (sheet, go) => sheet.querySelectorAll(".sheetlib, .close").forEach(b => b.onclick = go);
 // A file's or a disk's size as the commands say it (words.size_words, which tests/test_words.py holds this to): in
 // thousands, as disks are sold, in the largest unit it has at least one of (the smallest in which it rounds to
 // under a thousand), to one decimal, a half up.
@@ -2561,6 +2597,7 @@ const IOS_APP = navigator.standalone === true;  // the iPad's or iPhone's home-s
 // what's open or draws it again.
 const SHEET = { view: "", it: null, list: null, back: null };
 function sheetShows(view, { it = null, list = null } = {}) {
+  $("sheet").classList.toggle("titled", view === "title");  // a title's details: the cover beside the rest, where there's room
   // a title's details opened from a series or a list go back to it, and the same title's again (drawn anew, or back
   // from reading it) keep their way back; anything else has none
   const back = view !== "title" ? null : ["series", "list"].includes(SHEET.view) ? { view: SHEET.view, list: SHEET.list, top: $("sheet").scrollTop }
@@ -2599,13 +2636,12 @@ function itemDrawn(it, again) {
   const where = (FACET.src.labels[it.src] || it.src) + (under ? ` · ${under}` : "") + (it.bonus ? " (newsletter bonus)" : "");
   const also = (it.cp || []).map(([s, w]) => (FACET.src.labels[s] || s) + (w ? ` · ${w}` : "")).join("; ");
   const sheet = $("sheet");
-  sheet.innerHTML = `${back ? `<button class="linkbtn sheetup" id="sheetup">‹ ${esc(back.view === "list" ? titleOfList(back.list) : back.list[0].s || "Back")}</button>` : ""}<button class="close" aria-label="Close">${CLOSE_X}</button>
+  sheet.innerHTML = `${sheetTop(back ? `<button class="linkbtn sheetup" id="sheetup">‹ ${esc(back.view === "list" ? titleOfList(back.list) : back.list[0].s || "Back")}</button>` : "")}
     <div class="dhead">${coverHtml(it)}<div class="dtop">
       <h2>${esc(it.t)}</h2>
       ${kv("By", (it.a || []).join(", "))}${it.s ? kv("Series", `${it.s}${it.n ? " #" + it.n : ""}`) : ""}
       ${canRead(it) ? readRow(it) : cantOpen(it) + listRow(it)}
-      ${starsHtml(it)}
-      </div><div class="drest">
+      </div>${starsHtml(it)}<div class="drest">
       ${kv("Publisher", it.p)}${kv("Year", it.y)}${kv("From", where)}${kv("Also in", also)}${kv("Bought", it.dt)}
       ${kv("Best on", (FACET.dev.labels[it.dev] || ""))}${kv("ISBN", it.isbn)}
       ${lookedUp(it).length ? `<div class="kv">Details from: ${lookedUp(it).map(([name, url]) => (/^https:\/\//.test(url || "")
@@ -2700,7 +2736,7 @@ function setDecideCount(n) {
 function openSeries(list) {
   sheetShows("series", { list });
   const sheet = $("sheet");
-  sheet.innerHTML = `<button class="close" aria-label="Close">${CLOSE_X}</button><h2 style="margin:0">${esc(list[0].s)}</h2>
+  sheet.innerHTML = `${sheetTop()}<h2 style="margin:0">${esc(list[0].s)}</h2>
     <div class="kv">${list.length} volumes${(list[0].a || []).length ? " · " + esc(list[0].a.join(", ")) : ""}${EDIT.many
       ? ` · <button class="linkbtn" id="tagseries">Edit all ${list.length}…</button>` : ""}</div>
     <div class="series-list"></div>`;
@@ -2710,7 +2746,7 @@ function openSeries(list) {
   if (EDIT.many) sheet.querySelector("#tagseries").onclick = () => openBulkEdit(list, `The series “${list[0].s}”`);
 }
 function wireSheet(sheet) {
-  sheet.querySelector(".close").onclick = closeSheet;
+  wireTop(sheet, closeSheet);
   const up = sheet.querySelector("#sheetup");
   if (up) up.onclick = backFromTitle;
   sheet.querySelectorAll("[data-genre]").forEach(b => b.onclick = () => onlyWith("g", b.dataset.genre));
@@ -4686,7 +4722,7 @@ function renderList(top = $("sheet").scrollTop) {  // the list SHEET shows, draw
       + `<button data-move="off" aria-label="Take it off" title="Take it off">✕</button></span></li>`;
   }).join("");
   const n = entries.length, count = titles(n);
-  sheet.innerHTML = (own ? '<button class="linkbtn sheetup" id="listup">‹ Your lists</button>' : "") + `<button class="close" aria-label="Close">${CLOSE_X}</button>`
+  sheet.innerHTML = sheetTop(own ? '<button class="linkbtn sheetup" id="listup">‹ Your lists</button>' : "")
     + (own ? `<div class="ownhead" id="ownhead"><h2>${esc(own.name)}</h2></div><div class="kv">${count} · <button class="linkbtn" id="ownrename">Rename</button> · <button class="linkbtn" id="owndelete">Delete</button></div>`
       : `<h2 style="margin:0">Reading list</h2><div class="kv">${count}</div>`)
     + (own && APPS_TICKS ? `<div class="ownapps">`
@@ -4695,7 +4731,7 @@ function renderList(top = $("sheet").scrollTop) {  // the list SHEET shows, draw
       + (FEATURE_TICK ? `<label class="pickrow"><input type="checkbox" id="ownfeat"${own.featured ? " checked" : ""}><span><b>Featured</b><small>First on the feed's front page: one list at a time</small></span></label>` : "") + `</div>` : "")
     + (upNext ? `<div class="listplay"><button class="btn primary" id="listplay">Read next</button><span class="kv">${esc(upNext.t)}</span></div>` : "")
     + (rows ? `<ol class="lrows">${rows}</ol>` : `<p class="lempty">${own ? `Nothing on it yet. Tap ${listsIcon} beside <i>Read</i> in a title's details to add one.` : `Nothing on it yet. Tap the heart ${HEART} beside <i>Read</i> in a title's details, or in the reader's menu.`}</p><div class="lrows"></div>`);
-  sheet.querySelector(".close").onclick = hide;
+  wireTop(sheet, hide);
   sheet.scrollTop = top;
   const play = sheet.querySelector("#listplay");
   if (play) play.onclick = () => {
@@ -4783,11 +4819,11 @@ function renderOwnLists(top = $("sheet").scrollTop) {  // drawn anew where it wa
     const pics = l.rows.slice(0, 3).map(e => e.gone ? null : titleById(e.id)).filter(Boolean).map(it => coverHtml(it)).join(""), count = l.rows.length;
     return `<li><button data-own="${esc(l.id)}"><span class="ownpics">${pics}</span><span class="ownwords"><b>${esc(l.name)}</b><small>${titles(count)}${l.featured ? " · Featured in reading apps" : l.apps ? " · In reading apps" : ""}</small></span></button></li>`;
   }).join("");
-  sheet.innerHTML = `<button class="close" aria-label="Close">${CLOSE_X}</button><h2 style="margin:0">Your lists</h2>`
+  sheet.innerHTML = `${sheetTop()}<h2 style="margin:0">Your lists</h2>`
     + `<div class="kv">${n ? `${n} list${n === 1 ? "" : "s"}` : "Like playlists: a list you name, put in your own order, and read through."}</div>`
     + `<form class="ownnew" id="ownnew"><input type="text" id="ownnewname" maxlength="60" autocomplete="off" placeholder="A new list, for example Tabletop night" aria-label="The name of a new list"><button class="btn primary">Make it</button></form>`
     + `<ul class="ownrows">${rows}</ul>`;
-  sheet.querySelector(".close").onclick = hide;
+  wireTop(sheet, hide);
   sheet.scrollTop = top;
   sheet.querySelector("#ownnew").onsubmit = e => {
     e.preventDefault();
@@ -4903,11 +4939,11 @@ function renderBookmarks(top = $("sheet").scrollTop) {  // drawn anew where it w
   const chips = REASONS.filter(([why]) => BOOKMARKS.some(b => b.why === why)).map(([why, sign, word]) =>
     `<button data-why="${why}" aria-pressed="${bookmarksOnly === why}"><em>${sign}</em>${word} ${BOOKMARKS.filter(b => b.why === why).length}</button>`).join("");
   const marked = new Set(BOOKMARKS.map(b => b.id)).size, n = BOOKMARKS.length;
-  sheet.innerHTML = `<button class="close" aria-label="Close">${CLOSE_X}</button><h2 style="margin:0">Bookmarks</h2>`
+  sheet.innerHTML = `${sheetTop()}<h2 style="margin:0">Bookmarks</h2>`
     + `<div class="kv">${n} bookmark${n === 1 ? "" : "s"} in ${titles(marked)}</div>`
     + `<div class="bmlist">` + (n ? `<div class="bmchips" role="group" aria-label="Show only one reason"><button data-why="" aria-pressed="${!bookmarksOnly}">All ${n}</button>${chips}</div>${rows}`
       : `<p class="lempty">Nothing here yet. Open a book, and in the reader's menu tap the ribbon ${RIBBON} beside the page number.</p><div class="bmrows"></div>`) + `</div>`;
-  sheet.querySelector(".close").onclick = hide;
+  wireTop(sheet, hide);
   sheet.scrollTop = top;
   sheet.querySelector(".bmlist").onclick = e => {
     const b = e.target.closest("button");
@@ -4951,12 +4987,12 @@ function renderMyReviews() {
       + `<small>${starLine(r.stars)} ${said ? `<span class="rvstate${r.state.includes("declined") ? " no" : ""}">${said}</span>` : esc(whenSaid(r.when))}${words(r) ? "" : " · stars only"}</small>`
       + `${words(r) ? `<q>${esc(r.change || r.text)}</q>` : ""}</span></button></li>`;
   }).join("");
-  sheet.innerHTML = `<button class="close" aria-label="Close">${CLOSE_X}</button><h2 style="margin:0">Ratings and reviews</h2>`
+  sheet.innerHTML = `${sheetTop()}<h2 style="margin:0">Ratings and reviews</h2>`
     + `<div class="kv">${titles(n)} rated, ${w} with words</div><div class="bmlist">`
     + (n ? `<div class="bmchips" role="group" aria-label="Show"><button data-only="" aria-pressed="${!myRevOnly}">All ${n}</button><button data-only="words" aria-pressed="${myRevOnly === "words"}">With words ${w}</button>`
       + `<button data-only="stars" aria-pressed="${myRevOnly === "stars"}">Stars only ${n - w}</button></div><ul class="bmrows">${rows}</ul>`
       : `<p class="lempty">Nothing yet. A title's details have <i>Your stars</i>, below <i>Read</i>, and a book's end asks for them.</p>`) + `</div>`;
-  sheet.querySelector(".close").onclick = hide;
+  wireTop(sheet, hide);
   sheet.querySelector(".bmlist").onclick = e => {
     const b = e.target.closest("button");
     if (!b) return;

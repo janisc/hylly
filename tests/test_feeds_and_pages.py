@@ -1542,7 +1542,7 @@ def test_what_the_sheet_shows_is_one_record_and_back_goes_where_it_says():
     as each opens: a title opened from a series or a list goes back to it, as far down as it was, and anything else
     closes; the redraws go by its view."""
     script = """
-const sheet = { scrollTop: 0 }, detail = { open: false, classList: { add() { detail.open = true; }, remove() { detail.open = false; } } };
+const sheet = { scrollTop: 0, titled: null, classList: { toggle(name, on) { if (name === "titled") sheet.titled = on; } } }, detail = { open: false, classList: { add() { detail.open = true; }, remove() { detail.open = false; } } };
 const $ = id => id === "sheet" ? sheet : id === "detail" ? detail : { textContent: "", hidden: false, classList: { contains: () => false } };
 const closeDialog = id => $(id).classList.remove("open"), document = { querySelector: () => null };
 const went = [], drawn = [];
@@ -1555,13 +1555,14 @@ const renderOwnLists = () => drawn.push("lists"), placesKnown = () => {}, readRo
 /* part 3 */
 const A = { id: "a" }, B = { id: "b" }, out = {};
 const step = () => [SHEET.view, SHEET.it && SHEET.it.id, SHEET.back && [SHEET.back.view, SHEET.back.top], detail.open, sheet.scrollTop];
+out.titled = []; const mark = () => out.titled.push([SHEET.view, sheet.titled]);
 openSeries([A, B]);
 went.length = 0;
 sheet.scrollTop = 40;
-sheetShows("title", { it: A }); out.fromSeries = step();
+sheetShows("title", { it: A }); out.fromSeries = step(); mark();
 sheetShows("title", { it: A }); out.again = step();  // drawn anew, or back from reading it
 closeSheet(); out.back = [step(), went.splice(0)];
-openAList("l1"); went.length = 0; sheet.scrollTop = 25;
+openAList("l1"); mark(); went.length = 0; sheet.scrollTop = 25;
 sheetShows("title", { it: B }); out.fromList = step();
 sheetShows("title", { it: A }); out.another = step();  // from one title's details to another's: no way back
 sheetShows("list", { list: "l1" }); sheet.scrollTop = 25; sheetShows("title", { it: B });
@@ -1575,6 +1576,7 @@ process.stdout.write(JSON.stringify(out));
 """
     out = in_the_page(script, (r"const SHEET = ", r"// A title's details\. again:"), (r"function bookmarksShown\(", r"function dropBookmark\("),
                       (r"function readingShown\(", r"function listChange\("))
+    assert out["titled"] == [["title", True], ["list", False]]  # the cover beside the rest in a title's details alone (.titled)
     assert out["fromSeries"] == ["title", "a", ["series", 40], True, 40]
     assert out["again"] == ["title", "a", ["series", 40], True, 40]
     assert out["back"] == [["series", None, None, True, 40], [["series", 2]]]  # the series again, as far down as it was
