@@ -2974,6 +2974,24 @@ def _patient(seconds: float) -> None:
     time.sleep(seconds)
 
 
+def _listed_by_size(root):
+    """The places in the library of the files the catalog lists with a size (copies.look): for a book in the Inbox that
+    no recorded copy has the size and MD5 of, the files in your own folders are looked at too. As the last build kept
+    it in the database; one that can't be read lists nothing."""
+    import sqlite3
+
+    from . import db, manifest
+
+    def listed(size: int) -> list[str]:
+        try:
+            with manifest.store(root).read() as c:
+                return [row[0] for row in c.execute("SELECT path FROM title_file WHERE size = ? ORDER BY path", (size,))]
+        except (OSError, SystemExit, sqlite3.Error, db.Newer, db.Unusable):
+            return []
+
+    return listed
+
+
 def _catalogued(root, dests) -> dict[str, dict | None]:
     """The catalog's record of the title with a file at each of these places in the library, by place, in any capitals;
     None where it lists none. As the last build kept it in the database; one that can't be read lists nothing, and a
@@ -3141,7 +3159,7 @@ def _inbox_pass(root, inboxes: list, *, dry_run: bool = False, by_hand: bool = F
             state["said"][key] = words
 
     guard = copies.Guard(root)  # the library, by any spelling of it: never touched
-    found = copies.look(root, inboxes, state["seen"], now, by_hand, guard)
+    found = copies.look(root, inboxes, state["seen"], now, by_hand, guard, _listed_by_size(root))
     for inbox in inboxes:
         if inbox in found.missing:
             result["missing"].append(inbox.folder)

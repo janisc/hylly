@@ -10,6 +10,8 @@ What changed in each version of Hylly, the newest first. How each part works is 
 - A title's details, your lists and bookmarks fill the screen on a phone or a tablet, with *‹ Library* at the top, and open
   as a window in the middle of the page on a computer. They no longer scroll sideways: a wide cover had pushed the
   fifth star off an upright phone.
+- The Inbox knows a book identical to one in your own folders, by its size and MD5, not only to a copy Hylly recorded, and
+  leaves it out as already in the library.
 - How long a copy or a backup has left goes by what each file costs and by its bytes, both learned as it runs: one that
   began with thousands of small files had its first notes say hundreds of hours.
 - The PDFs of a library given by a relative path (`hylly catalog --library books`) are read: each run took them for

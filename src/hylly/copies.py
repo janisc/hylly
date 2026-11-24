@@ -868,6 +868,22 @@ def _in_library(root: Path, records: list[dict]) -> str:
     return ""
 
 
+def _same_there(root: Path, places: list[str], book: Waiting) -> str:
+    """The first of these files of the library, whoever put it there, that has a book's size and MD5 (read now, of both;
+    the book's, if it isn't read yet, is kept). "" if none."""
+    for place in places:
+        there = paths.library_file(root, place)
+        try:
+            if there is None or not there.is_file() or there.stat().st_size != book.size:
+                continue
+            book.md5 = book.md5 or md5_of(book.src).hexdigest()
+            if md5_of(there).hexdigest() == book.md5:
+                return place
+        except OSError:
+            continue
+    return ""
+
+
 def _same(a: Path, b: Path) -> bool:
     """Whether two files are the same by their size, then their MD5, both read now."""
     try:
@@ -894,13 +910,16 @@ def nested(inboxes: list) -> list[tuple]:
             if other is not inbox and (_within(inbox.folder, other.folder) or _within(other.folder, inbox.folder))]
 
 
-def look(root: Path, inboxes: list, seen: dict, now: float, by_hand: bool = False, guard: Guard | None = None) -> Look:
+def look(root: Path, inboxes: list, seen: dict, now: float, by_hand: bool = False, guard: Guard | None = None,
+         listed: Callable[[int], list[str]] | None = None) -> Look:
     """Each Inbox (folders.inboxes), looked at: nothing is written, and of the books only what tells them apart is read.
     Each book's place is the folder of yours its kind belongs in, as its folders in the Inbox say (folders.placed).
     A book is taken once the look before saw it the same, by its size and time, and either it has stayed so for STEADY
     seconds or its time is that old (a copy that keeps the time of its original); by_hand (hylly add typed by a person),
     also one seen for the first time whose time is that old. One the library has already, by the size and MD5 a copy of
-    it was recorded with, is known at once, whatever its name: a book cut short has another MD5. Both MD5s are read now,
+    it was recorded with, is known at once, whatever its name: a book cut short has another MD5. So is one identical to a
+    file the catalog lists (listed: the places in the library of those with a size), whoever put it there: your own
+    folders' books have no record of a copy. Both MD5s are read now,
     never taken from what an earlier look kept, as the library's state folder is one a walled server may write. Books
     whose places in the library would be one: the first is taken, and the others set aside. An Inbox that is, or holds,
     the library by any spelling of it (guard), or is inside another Inbox or holds one, is passed over whole."""
@@ -955,12 +974,15 @@ def look(root: Path, inboxes: list, seen: dict, now: float, by_hand: bool = Fals
             entry = now_seen[rel] = {"size": book.size, "mtime": book.mtime,
                                      "since": last["since"] if same and _number(last.get("since")) else now}
             try:
+                copy = ""
                 if book.size in sizes:  # read only when a recorded copy has its size; read now, every time
                     book.md5 = md5_of(path).hexdigest()
                     copy = _in_library(root, by_sum.get((book.size, book.md5), []))
-                    if copy:
-                        found.already.append((book, copy))
-                        continue
+                if not copy and listed is not None and book.size:  # a file of no bytes is no book
+                    copy = _same_there(root, listed(book.size), book)
+                if copy:
+                    found.already.append((book, copy))
+                    continue
                 steady = (same and (now - entry["since"] >= STEADY or now - book.mtime >= STEADY)
                           or by_hand and not last and now - book.mtime >= STEADY)
                 if not steady:

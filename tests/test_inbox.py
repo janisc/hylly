@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import time
 import zipfile
 from pathlib import Path
@@ -513,6 +514,49 @@ def test_a_book_already_in_the_library_goes_from_the_inbox_at_the_first_pass(inb
     assert not book.exists() and not renamed.exists() and said == "Inbox: 2 books already in the library removed from the Inbox.\n"
     assert len(copies.recorded(root)) == 2 and not (root / "ebooks" / "Hedge Lore, a copy.epub").exists()
     assert notes[0][2] == "2 books already in the library removed from the Inbox." and Lantern.asked == []
+
+
+def test_a_book_identical_to_one_in_your_own_folder_goes_from_the_inbox_though_nothing_is_recorded_of_it(inbox, capsys):
+    """A book that was in your folders before Hylly kept records, as old game manuals were, has no record of a copy, so a
+    second one dropped in the Inbox came in beside it. It is told by its size and MD5 now, from the files the catalog
+    lists, whoever put them there, and a file that only has its size stays the book it is."""
+    root, box, notes, _ = inbox
+    mine = epub(root / "ebooks" / "Hedge Lore.epub", "Hedge Lore", "Ann Writer")  # put there by hand
+    catalog.build(root, log=lambda line: None)
+    capsys.readouterr()
+    assert copies.recorded(root) == {} and titles(root)
+    same = aged(shutil.copy(mine, box / "a different name.epub"))
+    other = box / "Same size, another book.epub"
+    raw = bytearray(mine.read_bytes())
+    raw[len(raw) // 2] ^= 0xFF  # as big, and not the same
+    other.write_bytes(bytes(raw))
+    aged(other)
+    said = a_pass(capsys, root)
+    assert not same.exists() and "1 book already in the library removed from the Inbox" in said
+    assert other.exists() or (box / folders.NOT_ADDED).exists()  # damaged now, which is why it isn't taken: never "already"
+    assert mine.read_bytes() and (root / "ebooks" / "Hedge Lore.epub").is_file()
+
+
+def test_what_the_catalog_lists_by_size_is_a_look_s_and_not_read_without_a_book_of_that_size(inbox):
+    root, box, _, _ = inbox
+    mine = epub(root / "ebooks" / "Hedge Lore.epub", "Hedge Lore", "Ann Writer")
+    aged(mine)
+    asked: list[int] = []
+
+    def listed(size: int) -> list[str]:
+        asked.append(size)
+        return ["ebooks/Hedge Lore.epub", "no such file.epub", "../outside.epub"]
+
+    copy = aged(shutil.copy(mine, box / "copy.epub"))
+    look = copies.look(root, folders.inboxes(root=root), {}, time.time(), listed=listed)
+    assert [(b.src, dest) for b, dest in look.already] == [(copy, "ebooks/Hedge Lore.epub")] and asked == [mine.stat().st_size]
+    copies.look(root, folders.inboxes(root=root), {}, time.time())  # without it, as before
+    empty = box / "Empty.epub"
+    empty.write_bytes(b"")
+    aged(empty)
+    asked.clear()
+    copies.look(root, folders.inboxes(root=root), {}, time.time(), listed=listed)
+    assert asked == [mine.stat().st_size]  # not asked of a file with no bytes
 
 
 def test_a_lookup_out_of_budget_leaves_the_book_in_and_asks_again_at_a_later_pass(inbox, capsys):
