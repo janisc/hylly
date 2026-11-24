@@ -902,7 +902,7 @@ def folder_series_author(item: Item) -> str:
 
 
 def folder_named(item: Item) -> bool:
-    """'Moonwake - Reference Card.pdf' in manuals\\Moonwake\\ (or below it): named by its folder and what it is, so the
+    """'Moonwake - Rule Sheet.pdf' in manuals\\Moonwake\\ (or below it): named by its folder and what it is, so the
     name is its title, whole, for a kind whose rules say so ([kinds.X] folder_named: manuals). Its start had been taken for an
     author where it reads as a person's, and what a scan's PDF says of itself is the program that made it."""
     kind, rel = rules.current().kinds.get(item.kind), PurePosixPath(item.primary[0])

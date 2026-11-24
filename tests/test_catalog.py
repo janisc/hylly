@@ -705,12 +705,12 @@ def test_any_folder_of_your_own_is_a_source_and_its_settings_say_more(tmp_path):
 
 
 def test_a_manual_named_by_its_folder_goes_by_its_name_whole_and_nothing_its_file_says(tmp_path):
-    """A game's name reads as a person's, so a manual named "Lantern Wolf - Reference Card" in Lantern Wolf had the game
+    """A game's name reads as a person's, so a manual named "Lantern Wolf - Rule Sheet" in Lantern Wolf had the game
     for its author, and a scan's PDF gave its title (the program that made it), its author (who ran it) and its year (of
     the scan). Named by its folder, it goes by its name, whole. Its pages and cover are its file's as ever; a manual named
     otherwise, one in no subfolder and a book named by its author's folder go by what they say, as they did."""
     wolf = tmp_path / "manuals" / "Lantern Wolf"
-    make_pdf(wolf / "Lantern Wolf - Reference Card.pdf", title="ACDSee PDF Image.")
+    make_pdf(wolf / "Lantern Wolf - Rule Sheet.pdf", title="ACDSee PDF Image.")
     make_pdf(wolf / "Maps" / "lantern wolf - North_Map.pdf", title="The Moon Garden")  # one folder down
     make_pdf(wolf / "LANTERN WOLF - hint_book.pdf", title="The Moon Garden")
     make_pdf(wolf / "handbook.pdf", title="The Lantern Wolf Handbook")
@@ -723,7 +723,7 @@ def test_a_manual_named_by_its_folder_goes_by_its_name_whole_and_nothing_its_fil
     got = {PurePosixPath(unquote(r["f"][0][0])).name: r for r in data(tmp_path)}
     said = {name: (r["t"], r.get("a"), r.get("y"), bool(r.get("sub")), bool(r.get("tf"))) for name, r in got.items()}
     assert said == {
-        "Lantern Wolf - Reference Card.pdf": ("Lantern Wolf - Reference Card", None, None, False, False),
+        "Lantern Wolf - Rule Sheet.pdf": ("Lantern Wolf - Rule Sheet", None, None, False, False),
         "LANTERN WOLF - hint_book.pdf": ("LANTERN WOLF - hint book", None, None, False, False),
         "Lantern Wolf - posters.cbz": ("Lantern Wolf - posters", None, None, False, False),
         "lantern wolf - North_Map.pdf": ("lantern wolf - North Map", None, None, False, False),
@@ -734,7 +734,7 @@ def test_a_manual_named_by_its_folder_goes_by_its_name_whole_and_nothing_its_fil
     with_settings('[folders.manuals]\nkind = "book"\n')  # not manuals: as any book's file
     catalog.build(tmp_path, log=lambda s: None)
     got = {PurePosixPath(unquote(r["f"][0][0])).stem: (r["t"], r["a"]) for r in data(tmp_path)}
-    assert got["Lantern Wolf - Reference Card"] == ("Lantern Wolf - Reference Card", ["Pat Sample"])  # a program's words are no title
+    assert got["Lantern Wolf - Rule Sheet"] == ("Lantern Wolf - Rule Sheet", ["Pat Sample"])  # a program's words are no title
     assert got["Lantern Wolf - posters"] == ("posters", ["Lantern Wolf"]) and got["LANTERN WOLF - hint_book"] == ("The Moon Garden", ["Pat Sample"])
 
 

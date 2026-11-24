@@ -21,7 +21,7 @@
    "^test$",
    "^cover(?:\\s*[-:.]|$)",
    "\\.pm\\d\\b",
-   "^(?:adobe (?:photoshop|illustrator|indesign)(?: pdf)?|acdsee pdf image|full page (?:photo|fax)(?: print)?|(?:microsoft )?powerpoint presentation|layout \\d+|page \\d+)\\W*$"
+   "^(?:adobe (?:photoshop|illustrator|indesign)(?: pdf)?|acdsee pdf image|full page (?:photo|fax)(?: print)?|(?:microsoft )?power ?point presentation|layout \\d+|page \\d+)\\W*$"
   ],
   "title_extensions": [
    "doc",

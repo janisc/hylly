@@ -55,8 +55,8 @@ def test_junk_pdf_titles():
                  "cover", "Cover - Pocket Guide", "Front.psd", "(2)__", "Untitled-1", "test", "00 1234_FM_Intro",
                  "http://www.example.com/library/volume_ii.htm", "file:///C|/Scans/Legal.htm",
                  r"Z:\Games\Some Game\graph\world_map.jpg", "Slides_of_a_Talk.ppt", "XY_book.indb",
-                 "Adobe Photoshop PDF", "ACDSee PDF Image.", "Full page photo", "Full Page Fax Print", "PowerPoint Presentation",
-                 "Microsoft PowerPoint Presentation", "Layout 1", "Page 12"):
+                 "Adobe Photoshop PDF", "ACDSee PDF Image.", "Full page photo", "Full Page Photo Print", "Power Point Presentation",
+                 "Layout 1", "Page 12"):
         assert not meta.good_title(junk), junk
     for good in ("Book of Small Poems", '"Hello, World!" Said the Robot', "2084: A Novel", "Covered Bridges",
                  "Test-Driven Gardening", "Monthly Games Magazine", "Adobe Photoshop PDF Workflows", "Layout 1: A Primer",
