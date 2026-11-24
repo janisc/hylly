@@ -901,13 +901,20 @@ def folder_series_author(item: Item) -> str:
     return authors[0] if who and _stem_key(rel.stem).startswith(who) and folder.startswith(who) and folder != who else ""
 
 
+def by_folder(item: Item) -> rules.Kind | None:
+    """The kind of a title in a folder of yours that goes by the folder it's in ([kinds.X] folder_named: manuals): a game's
+    manuals are in its folder, many named "manual" or by a code; what a scan's PDF says of itself is the program that
+    made it; and a game's name reads as a person's, so "Lantern Wolf - manual" had the game for its author."""
+    kind = rules.current().kinds.get(item.kind)
+    return kind if kind and kind.folder_named and not item.title else None
+
+
 def folder_named(item: Item) -> bool:
     """'Moonwake - Rule Sheet.pdf' in manuals\\Moonwake\\ (or below it): named by its folder and what it is, so the
-    name is its title, whole, for a kind whose rules say so ([kinds.X] folder_named: manuals). Its start had been taken for an
-    author where it reads as a person's, and what a scan's PDF says of itself is the program that made it."""
-    kind, rel = rules.current().kinds.get(item.kind), PurePosixPath(item.primary[0])
-    if not kind or not kind.folder_named or item.title:
+    name is its title, whole, and nothing the file says of itself is taken (by_folder)."""
+    if not by_folder(item):
         return False
+    rel = PurePosixPath(item.primary[0])
     stem = matching.folded(rel.stem)
     return any(stem.startswith(f"{matching.folded(folder)} - ") for folder in rel.parts[1:-1])
 
@@ -916,8 +923,35 @@ SAID = ("title", "authors", "series", "number", "description", "publisher", "yea
 
 
 def said(item: Item) -> dict:
-    """What a title's file says of itself, as far as it's taken (SAID is what a file named by its folder doesn't give)."""
-    return {k: v for k, v in item.meta.items() if k not in SAID} if folder_named(item) else item.meta
+    """What a title's file says of itself, as far as it's taken: of one that goes by its folder, nothing in SAID where it's
+    named by it, and else nothing but its whole name from its name, as no part of that is an author."""
+    if not by_folder(item):
+        return item.meta
+    if folder_named(item):
+        return {k: v for k, v in item.meta.items() if k not in SAID}
+    named = item.meta.get("named") or []
+    if item.primary[1] == "zip":  # a package's came from the name of the book inside (renamed)
+        return item.meta
+    kept = {k: v for k, v in item.meta.items() if k not in named}
+    return {**kept, "title": name_title(item)} if "title" in named else kept
+
+
+def name_title(item: Item) -> str:
+    """The title a file's name gives."""
+    stem = PurePosixPath(item.primary[0]).stem
+    return meta.whole_name(stem) if by_folder(item) else meta.from_filename(stem)[0]
+
+
+def folder_first(item: Item, title: str) -> str:
+    """'manual.pdf' in manuals\\Moonwake\\Docs\\: the title with the folder's name in front ("Moonwake - manual"), where
+    it has no word of it, nor of one above it, for a title that goes by its folder (by_folder). The nearest folder whose
+    name says more than what's in it or where it's from ([kinds.X] plain_words: Docs, Disc 2, Steam)."""
+    kind = by_folder(item)
+    telling = [(folder, kind.telling(folder)) for folder in PurePosixPath(item.primary[0]).parts[1:-1]] if kind else []
+    telling = [(folder, words) for folder, words in telling if words]
+    if not telling or kind.telling(title) & set().union(*(words for _, words in telling)):
+        return title
+    return f"{telling[-1][0]} - {title}"
 
 
 def titled(item: Item) -> tuple[str, str, str]:
@@ -926,10 +960,10 @@ def titled(item: Item) -> tuple[str, str, str]:
     m = said(item)
     stem = PurePosixPath(item.primary[0]).stem
     if folder_named(item):
-        return meta.name_words(stem), "", ""
+        return name_title(item), "", ""
     own = rules.current().strip_number(m.get("title", "")).strip()  # a list's number: "83.05 The Silent Orbit"
     if own and not meta.good_title(own):  # "test", "00 1234_FM_Intro", a web address: the file name says more
-        own = meta.from_filename(stem)[0]
+        own = name_title(item)
     if folder_series_author(item):
         own = f"{folder_series_author(item)} {own}"
     title = item.title or own or stem
@@ -948,8 +982,8 @@ def title_from_file(item: Item) -> bool:
     if item.title or item.named or folder_named(item):
         return False
     r = rules.current()
-    own = r.strip_number(item.meta.get("title", "")).strip()
-    name = r.strip_number(meta.from_filename(PurePosixPath(item.primary[0]).stem)[0]).strip()
+    own = r.strip_number(said(item).get("title", "")).strip()
+    name = r.strip_number(name_title(item)).strip()
     return not own or not meta.good_title(own) or own == name
 
 
@@ -986,6 +1020,7 @@ def record(item: Item, lookup: dict | None, kind_fix: str | None = None) -> dict
     title, series, number = map(one_line, titled(item))
     # a title of only marks: its file's name; that too (" .epub"): a word and its id, as every card needs a title
     title = title or one_line(PurePosixPath(item.primary[0]).stem) or f"Untitled ({item.id})"
+    alone, title = title, one_line(folder_first(item, title))
     authors = tidy_authors(authors_of(item))  # mended and cleaned now: a name of only marks leaves room for a lookup's
     comic = item.kind == "comic"
     if not series:
@@ -1024,7 +1059,8 @@ def record(item: Item, lookup: dict | None, kind_fix: str | None = None) -> dict
         "bad": {quote(r): why for r, why in item.bad.items()},  # no reader can open these (meta.cant_open)
         "zp": quote(item.primary[0]) if m.get("_pics") else "",  # the ZIP is pages as pictures: read like a CBZ
         "c": f"covers/{thumb_name(item.id)}" if m.get("_cover") else shop_cover(item.cover_url),
-        "_file": item.primary[1:], "_trust": confirmed(item, title),  # for merge_copies; not written out
+        # for merge_copies; not written out. _copy: the title as it is in any folder, where its folder's name is in front
+        "_file": item.primary[1:], "_trust": confirmed(item, title), "_copy": alone if alone != title else "",
     }
     return {k: v for k, v in rec.items() if v not in ("", [], {}, False, None)}
 
@@ -1141,7 +1177,7 @@ def merge_copies(records: list[dict], order: list[str] | None = None, pairs: lis
     apart = {frozenset(p[:2]) for p in pairs if p[2] == "apart" and p[0] != p[1]}
     buckets: dict[tuple[str, str], list[dict]] = {}
     for r in records:
-        buckets.setdefault((card_kind(r["k"]), copy_words(r["t"])), []).append(r)
+        buckets.setdefault((card_kind(r["k"]), copy_words(r.get("_copy") or r["t"])), []).append(r)
 
     def joins(group: list[dict], r: dict) -> bool:
         if any(frozenset((x["id"], r["id"])) in apart for x in group):

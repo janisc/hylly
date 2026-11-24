@@ -81,7 +81,8 @@ SPECS = {
     "kinds": Spec({"prose_max_mb": NUMBER}, entry={"label": TEXT, "plural": TEXT, "device": TEXT, "why_device": TEXT,
                                                     "bundle_words": WORDS, "publishers": LIST, "prose": BOOL,
                                                     "layout": TEXT, "folders": LIST, "itchio": LIST,
-                                                    "joins_books": BOOL, "text_first": BOOL, "folder_named": BOOL}),
+                                                    "joins_books": BOOL, "text_first": BOOL, "folder_named": BOOL,
+                                                    "plain_words": LIST}),
     "labels": Spec({"extra": WORDS, "audio": WORDS, "video": WORDS}),
     "languages": Spec(other=WORDS),
     "genres": Spec({"titles_unread": LIST}, entry={"words": WORDS, "patterns": PATTERNS}),
@@ -647,7 +648,14 @@ class Kind:
     joins_books: bool = False  # a copy of it in another place is the same title as a book's there (merge_copies)
     text_first: bool = False  # its e-book is opened before its pages (PDF, comic): the reader and the library page
     makers: re.Pattern | None = None  # publishers, as a pattern of whole words (why)
-    folder_named: bool = False  # a file named by its folder goes by its whole name (catalog.folder_named)
+    folder_named: bool = False  # its titles in your own folders go by the folder they're in (catalog.by_folder)
+    plain: frozenset[str] = frozenset()  # plain_words, as words_of gives them
+
+    def telling(self, name: str) -> set[str]:
+        """The words of a folder's name, or a title, that say more than what's there or where it's from (plain_words); a
+        number, or one letter (the s of "Baldur's"), only where nothing else does ("1942"). Of "Disc 2", none."""
+        words = {w for w in words_of(name) if w not in self.plain}
+        return {w for w in words if len(w) > 1 and not w.isdigit()} or {w for w in words if len(w) > 2 or not w.isdigit()}
 
     @property
     def word(self) -> str:
@@ -797,7 +805,8 @@ class Rules:
                     publishers, bool(entry.get("prose")), str(entry.get("layout") or ""),
                     tuple(f.lower() for f in entry.get("folders", [])),
                     tuple(g.lower() for g in entry.get("itchio", [])), str(entry.get("why_device") or ""),
-                    bool(entry.get("joins_books")), bool(entry.get("text_first")), makers, bool(entry.get("folder_named")))
+                    bool(entry.get("joins_books")), bool(entry.get("text_first")), makers, bool(entry.get("folder_named")),
+                    frozenset(w for entry_word in entry.get("plain_words", []) for w in words_of(entry_word)))
 
     def _clash_of(self, where: tuple, said: str) -> RulesError:
         """A mistake only the rules merged show: the files that wrote to where (the table, if not the entry)."""

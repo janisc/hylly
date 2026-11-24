@@ -11,7 +11,7 @@ from urllib.parse import unquote
 
 import pytest
 
-from hylly import catalog, cli, exits, helppage, meta, paths, plan, snapshot
+from hylly import catalog, cli, exits, helppage, meta, paths, plan, rules, snapshot
 from hylly.download import Manifest
 
 from helpers import OPF, ORDERS, build_library, damage_a_mobi, data, locked_epub, make_epub, make_pdf, order, page_data, png, rec
@@ -44,7 +44,7 @@ def test_catalog_end_to_end(tmp_path, monkeypatch):
     assert "{{" not in help_page and str(tmp_path) not in help_page and "Yours now: your own folders." in help_page
     assert "Yours now: collections, comics, ebooks (My e-books), manuals" in helppage.help_page(tmp_path)  # the owner's
     manual = [i for i in items.values() if i["src"] == "manuals"][0]
-    assert manual["g"] == ["Game Manuals"] and manual["t"] == "Manual"
+    assert manual["g"] == ["Game Manuals"] and manual["t"] == "Wasteland Rover - Manual"  # its folder's name in front
     ebooks = {i["t"]: i for i in items.values() if i["src"] == "ebooks"}
     keeper = ebooks["The Lantern Keeper"]  # "(Harbor Lights)" moved from the title into the series
     assert (keeper["s"], keeper["n"], keeper["a"], keeper["g"], keeper["dev"], keeper["k"]) == \
@@ -702,6 +702,52 @@ def test_any_folder_of_your_own_is_a_source_and_its_settings_say_more(tmp_path):
     catalog.build(tmp_path, log=lambda s: None)
     (rec,) = data(tmp_path)
     assert (rec["src"], rec["g"], rec["dev"], rec["k"]) == ("shelf", ["Folklore & Myth"], "either", "tech")  # as the shops' tech books
+
+
+def test_a_manual_s_title_that_says_nothing_of_its_folder_has_the_folder_s_name_in_front(tmp_path):
+    """Manuals lie in their games' folders, many named "manual" or by a code, so the library showed "manual" over and over.
+    A title with no word of the folders it's in has the nearest one's name in front, the folders that say only what's in
+    them or where it's from (Docs, Disc 2, Steam) passed over; one that has a word of them stays, and so does one in no
+    telling folder. No part of a manual's name is an author. The rules may say otherwise."""
+    root = tmp_path / "manuals"
+    make_pdf(root / "Steam" / "Glass Harbor" / "manual.pdf", pages=1)
+    make_pdf(root / "Steam" / "Glass Harbor" / "Docs" / "Disc 2" / "GHTR_cov.pdf", pages=2)
+    make_pdf(root / "Steam" / "Glass Harbor" / "gh.pdf", pages=3, title="The Harbor Handbook")  # has a word of it
+    make_pdf(root / "Steam" / "Glass Harbor" / "ref.pdf", pages=4, title="Player's Guide")
+    make_pdf(root / "Steam" / "Moonwake's Tale" / "s.pdf", pages=5, title="Player's Handbook")  # the s of both says nothing
+    make_pdf(root / "Steam" / "1942" / "Extras" / "map.pdf", pages=6)  # a number says something where nothing else does
+    make_pdf(root / "Steam" / "Moonwake's Tale (2001)" / "Lantern Wolf - manual.pdf", pages=7)  # the game is no author
+    make_pdf(root / "GOG" / "Manuals" / "Pocket_Atlas.pdf", pages=8)  # no telling folder
+    make_pdf(root / "leaflet.pdf", pages=9)
+    make_pdf(tmp_path / "ebooks" / "Poetry" / "The Quiet Hours.pdf", pages=10)  # a book's title never goes by its folder
+    (tmp_path / "state").mkdir()
+    catalog.build(tmp_path, log=lambda s: None)
+    got = {PurePosixPath(unquote(r["f"][0][0])).name: (r["t"], r.get("a")) for r in data(tmp_path)}
+    assert got == {
+        "manual.pdf": ("Glass Harbor - manual", None), "GHTR_cov.pdf": ("Glass Harbor - GHTR cov", None),
+        "gh.pdf": ("The Harbor Handbook", ["Pat Sample"]), "ref.pdf": ("Glass Harbor - Player's Guide", ["Pat Sample"]),
+        "s.pdf": ("Moonwake's Tale - Player's Handbook", ["Pat Sample"]), "map.pdf": ("1942 - map", None),
+        "Lantern Wolf - manual.pdf": ("Moonwake's Tale (2001) - Lantern Wolf - manual", None),
+        "Pocket_Atlas.pdf": ("Pocket Atlas", None), "leaflet.pdf": ("leaflet", None), "The Quiet Hours.pdf": ("The Quiet Hours", None)}
+    mine = paths.settings_file().with_name("rules") / "mine.toml"  # yours: another folder passed over, or none of it
+    mine.parent.mkdir(exist_ok=True)
+    for rule, title in (('plain_words_add = ["Glass", "harbor"]', "manual"), ("folder_named = false", "manual")):
+        mine.write_text(f"[kinds.manual]\n{rule}\n", encoding="utf-8")
+        rules.reset()
+        catalog.build(tmp_path, log=lambda s: None)
+        assert [r["t"] for r in data(tmp_path) if unquote(r["f"][0][0]).endswith("/manual.pdf")] == [title]
+
+
+def test_copies_of_one_manual_in_two_games_folders_are_one_title_still(tmp_path):
+    """The very same file under one title was one title before the folder's name came in front of it, and is."""
+    for where in ("Steam/Glass Harbor", "GOG/Glass Harbor Deluxe"):
+        make_pdf(tmp_path / "manuals" / where / "manual.pdf", pages=4)
+    make_pdf(tmp_path / "manuals" / "Steam" / "Moonwake" / "manual.pdf", pages=9)  # another file
+    (tmp_path / "state").mkdir()
+    sizes = {p.stat().st_size for p in (tmp_path / "manuals").rglob("*Glass*/manual.pdf")}
+    assert len(sizes) == 1
+    catalog.build(tmp_path, log=lambda s: None)
+    assert sorted((r["t"], len(r["f"])) for r in data(tmp_path)) == [("Glass Harbor Deluxe - manual", 2), ("Moonwake - manual", 1)]
 
 
 def test_a_manual_named_by_its_folder_goes_by_its_name_whole_and_nothing_its_file_says(tmp_path):

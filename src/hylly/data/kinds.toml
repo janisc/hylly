@@ -15,9 +15,13 @@
 #   folders       your own folders of that name are of this kind, unless the settings say otherwise
 #   joins_books   a copy of it in another place is one title with a book's there, on one card in the library page
 #   text_first    its e-book opens before its pages (a PDF, a comic's), in the library page's reader
-#   folder_named  a file of it named by its folder and what it is ("Moonwake - Rule Sheet" in Moonwake) goes by its
-#                 whole name: no part of it is an author, and nothing the file says of itself is taken (a scan's PDF
-#                 says what made it, and when)
+#   folder_named  its titles in your own folders go by the folder they're in. A file named by it and what it is
+#                 ("Moonwake - Rule Sheet" in Moonwake) goes by its whole name, and nothing the file says of itself is
+#                 taken (a scan's PDF says what made it, and when); no part of any of its files' names is an author; and
+#                 a title with no word of its folder's name has that name in front ("manual" in Moonwake: "Moonwake -
+#                 manual")
+#   plain_words   for that: words of a folder's name that say only what's in it, or where it's from. A folder of these
+#                 alone (Docs, Disc 2, Steam) is passed over for the one above it
 #
 # What kind a shop's title is goes by the same rules at every shop: a title offered in a format of a kind's layout
 # (formats.toml: CBZ, CBR) is that kind. Otherwise words in the name of a bundle it came in, or the name of who made
@@ -103,6 +107,17 @@ plural = "Manuals"
 device = "ereader"
 folders = ["manuals"]
 folder_named = true
+plain_words = ["manual", "manuals", "doc", "docs", "document", "documents", "documentation", "extra", "extras", "bonus",
+               "bonuses", "goodie", "goodies", "pdf", "pdfs", "map", "maps", "art", "artwork", "artbook", "artbooks",
+               "guide", "guides", "book", "books", "booklet", "booklets", "handbook", "handbooks", "hint", "hints",
+               "hintbook", "hintbooks", "help", "readme", "reference", "card", "cards", "sheet", "sheets", "poster",
+               "posters", "quick", "start", "user", "users", "player", "players", "instruction", "instructions", "print",
+               "media", "misc", "support", "file", "files", "data", "assets", "content", "contents", "resource",
+               "resources", "legal", "language", "languages", "english", "eng", "en", "digital", "deluxe", "edition",
+               "game", "games", "disc", "discs", "disk", "disks", "cd", "dvd", "install", "installer", "installers",
+               "setup", "pc", "mac", "macos", "linux", "windows", "win", "win32", "win64", "x86", "x64", "dos",
+               "console", "consoles", "gog", "steam", "steamapps", "steamlibrary", "common", "epic", "uplay", "download",
+               "downloads", "program", "programs", "app", "apps", "bin", "the", "of", "and", "for", "in", "to", "a", "an"]
 
 [labels]
 # A shop's file whose name (such as "PDF (Supplement)") has one of these words is an extra, not another copy of

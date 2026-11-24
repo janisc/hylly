@@ -615,8 +615,8 @@ def looks_like_name(s: str, a_to_z: bool = False) -> bool:
             and not ({w.lower() for w in words} & r.not_name_words))
 
 
-def name_words(stem: str) -> str:
-    """A file's name as words, whole, without what [filename] in names.toml takes out."""
+def _tidied(stem: str) -> str:
+    """A file's name without what [filename] in names.toml takes out, its _ as spaces."""
     r = rules.current()
     s = r.strip_written.sub("", stem) if r.strip_written else stem  # a strip item with a _, as written: "_retail"
     s = re.sub(r"[_]+", " ", s)
@@ -626,9 +626,20 @@ def name_words(stem: str) -> str:
     return re.sub(r"\s+", " ", s).strip(" -.")
 
 
+def _spaced(name: str) -> str:
+    if rules.current().dots_as_spaces and "." in name and " " not in name:  # Names.With.Dots
+        return name.replace(".", " ")
+    return name
+
+
+def whole_name(stem: str) -> str:
+    """A title from a file's name, whole: no part of it an author (a kind's whose titles go by their folder)."""
+    return _spaced(_tidied(stem))
+
+
 def from_filename(stem: str) -> tuple[str, list[str]]:
     """(title, authors) from a file's name, by [filename] in names.toml."""
-    r, s = rules.current(), name_words(stem)
+    s = _tidied(stem)
     bracket = re.match(r"^\[([^\]]+)\]\s*(.+)$", s)
     if bracket and looks_like_name(bracket[1]):
         return bracket[2].strip(), [bracket[1].strip()]
@@ -641,9 +652,7 @@ def from_filename(stem: str) -> tuple[str, list[str]]:
             return left.strip(), [right.strip()]
         if named == (True, False):
             return right.strip(), [left.strip()]
-    if r.dots_as_spaces and "." in s and " " not in s:  # Names.With.Dots
-        s = s.replace(".", " ")
-    return s, []
+    return _spaced(s), []
 
 
 def series_in_brackets(name: str) -> tuple[str, str]:

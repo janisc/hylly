@@ -206,7 +206,8 @@ no more, by their CBZ still). A kind may not be named as one of `[download]`'s o
 | `itchio` | itch.io's classifications of this kind, as its survey groups them: `book`, `comic`, `tabletop`, `other`, `game` |
 | `joins_books` | a copy of it in another place is one title with a book's there, on one card in the library page (tech books, RPG books); a copy of any other kind joins only its own kind's |
 | `text_first` | its e-book opens before its pages (a PDF, a comic's) in the library page's reader (books) |
-| `folder_named` | a file of it in a subfolder of yours, named by that subfolder and what it is ("Moonwake - Rule Sheet.pdf" in `manuals\Moonwake`), goes by its whole name: no part of it is an author, and nothing the file says of itself is taken, as a scan's PDF says what made it and when (manuals) |
+| `folder_named` | its titles in your own folders go by the folder they're in (manuals). A file named by it and what it is ("Moonwake - Rule Sheet.pdf" in `manuals\Moonwake`) goes by its whole name, and nothing the file says of itself is taken, as a scan's PDF says what made it and when. No part of any of its files' names is an author. A title with no word of its folders' names has the nearest one's in front: `manual.pdf` in `manuals\Moonwake\Docs` is "Moonwake - manual". `folder_named = false` leaves the titles as any other's |
+| `plain_words` | for that: the words of a folder's name that say only what's in it, or where it's from. A folder of these alone ("Docs", "Disc 2", "Steam") is passed over for the one above it. `plain_words_add = ["Shelf"]` passes over yours too |
 
 What kind a shop's title is goes by the same rule at every shop (`Rules.kind_of`): a format of a kind's `layout`
 offered makes it that kind; else the words of the most particular kind found (comics before RPG books before tech
