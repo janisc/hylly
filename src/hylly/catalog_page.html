@@ -77,7 +77,7 @@ if (/^https?:$/.test(location.protocol)) (() => {
    guide's picture of the bar); the row of buttons at the foot of its page strip is --foot-h; and --tap is what a finger
    needs of a button, at least. The page's layers, from the bottom: the header; a title's details; the filters over the
    titles, on their shade; the shelves' tip and the menus; the dialogs, the tagger over the others (it opens over the
-   suggestions); the word that the library can't be reached; the Look sheet; the reader; the dialog opened over it (the
+   suggestions); the word that the library can't be reached, and the disc that turns as the page refreshes; the Look sheet; the reader; the dialog opened over it (the
    lists); the toast; and the first-time guide. Which dialog is on top, and so what lies behind it,
    goes by these (topDialog, overBook: the browser's z-index of each) */
 :root { --bar-h: 68px; --foot-h: 72px; --tap: 44px;
@@ -1098,6 +1098,19 @@ html[data-lift] .rbook foliate-view { view-transition-name: rpage; }
 #nonet svg { flex: none; }
 #nonet b, #nonet small { display: block; }
 #nonet small { font-size: 13px; opacity: .85; }
+/* Pull to refresh: a disc that comes down at the top as the list is pulled past its start, its arc growing until letting go
+   refreshes; then it turns until the page is there again. --pulled is how far it has come (px), --part how much of the way. */
+#pull { position: fixed; z-index: var(--z-offline); top: calc(env(safe-area-inset-top) - 52px); left: 50%; width: 42px; height: 42px; margin-left: -21px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; background: var(--panel); color: var(--muted); border: 1px solid var(--line); box-shadow: 0 2px 12px rgba(0,0,0,.28); pointer-events: none;
+        transform: translateY(calc(var(--pulled, 0) * 1px)); }
+#pull.far, #pull.going { color: var(--accent); }
+#pull.going, #pull.back { transition: transform .2s ease-out; }
+#pull i { width: 24px; height: 24px; border-radius: 50%; transform: rotate(calc(var(--part, 0) * 300deg)); background: conic-gradient(currentColor calc(var(--part, 0) * 270deg), transparent 0);
+          -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 3.5px), currentColor calc(100% - 3px)); mask: radial-gradient(closest-side, transparent calc(100% - 3.5px), currentColor calc(100% - 3px)); }
+#pull.going i { animation: pullturn .9s linear infinite; }
+@keyframes pullturn { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+@keyframes pullfade { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { #pull.going, #pull.back { transition: none; } #pull.going i { animation: pullfade 1.6s ease-in-out infinite; } }
 #toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,.3); display: none; gap: 14px; align-items: center; z-index: var(--z-toast); font-size: 14px; width: max-content; max-width: calc(100% - 32px); }
 #toast.show { display: flex; }
 #reader #toast { bottom: calc(env(safe-area-inset-bottom) + var(--foot-h) + 12px); }  /* over a book it's inside the reader, which full screen needs, and clear of the buttons at the foot */
@@ -1631,6 +1644,7 @@ if (!/^https?:$/.test(location.protocol)) document.write("<p class='fromdisk'>Th
   <div class="actions"><span id="shelfcount" class="kv" style="margin-right:auto;align-self:center"></span><button class="btn" id="shelfdelete" hidden>Delete</button><button class="btn" id="shelfcancel">Cancel</button><button class="btn primary" id="shelfok">Save</button></div>
 </div></div>
 <div id="nonet" role="status" hidden><svg class="i" width="22" height="22" aria-hidden="true"><use href="#i-offline"/></svg><span><b>Can't reach the library</b><small>What's already here still works. Trying again…</small></span></div>
+<div id="pull" role="status" hidden><i></i><span id="pullsaid" class="vh"></span></div>
 <div id="toast" role="status"></div>
 <datalist id="taglist"></datalist>
 <script type="text/hylly-later" id="pagescript">
@@ -1654,6 +1668,7 @@ if (!/^https?:$/.test(location.protocol)) document.write("<p class='fromdisk'>Th
 //   keeping your place: the title at the top stays there as the columns change [place, holding, width]
 //   a mouse drags the titles: pressed and moved, they scroll as under a finger, and glide on as it lets go [PAN,
 //       panGlide]
+//   pull to refresh: the list pulled down past its start, and the disc that says so; the menu's Refresh [PULL]
 //   detail: a title's details, its series, its file for the share sheet; what the sheet shows [SHEET, ready]
 //   controls and remembered state: the search and the filters in the address bar [timer]
 //   editing: tags, kind, the feed, details and suggestions, for an editor; toasts; and startSession, which hands what
@@ -2568,6 +2583,68 @@ function panGlideOn(el, vx, vy) {  // the speeds in px/ms; the same as a zoomed 
   panGlide = requestAnimationFrame(frame);
 }
 
+// ---- pull to refresh: in the iPhone's or iPad's home-screen app, which has none of its own (a browser has, and Android's
+// home-screen app). One finger that starts at the list's very start and goes down, more than sideways, brings the disc down
+// with it; let go far enough, the page loads again, and taken back up, nothing happens. Not over a dialog, a menu or a part
+// that scrolls by itself, nor zoomed in or in a field. The list itself moves as the device has it: nothing here holds it.
+const IOS_APP = navigator.standalone === true;  // the iPad's or iPhone's home-screen app
+const PULL = { from: null, on: false, part: 0, going: false }, PULL_FROM = 10, PULL_PX = 120, PULL_COMES = 64;  // px: a finger's way before it counts as a pull, and to where letting go refreshes; the disc's
+function pullShown(part, how = "") {  // how much of the way (0 to 1), and what it does: going round, or back up
+  const el = $("pull");
+  el.hidden = false;
+  el.className = [how, part >= 1 && !how ? "far" : ""].join(" ").trim();
+  el.style.setProperty("--part", part.toFixed(3));
+  el.style.setProperty("--pulled", (how === "back" ? 0 : Math.min(1, part) * PULL_COMES).toFixed(1));
+  if (how === "back") setTimeout(() => { if (el.className === "back") el.hidden = true; }, 220);
+}
+async function refreshPage() {  // the menu's Refresh too
+  if (PULL.going) return;
+  PULL.going = true;
+  pullShown(1, "going");
+  $("pullsaid").textContent = "Refreshing";
+  await netCheck(true);
+  if (!NET.down) return location.reload();  // turning until the page is there again
+  PULL.going = false;  // away from the library, the home-screen app would show an error, with no way back to the page
+  $("pullsaid").textContent = "";
+  pullShown(1, "back");
+  toast(CANT_REACH);
+}
+const pullTop = () => (document.scrollingElement || document.documentElement).scrollTop <= 0;
+function pullable(t) {  // a touch there may be a pull
+  if (PULL.going || DIALOGS.length || !$("reader").hidden || globalThis.visualViewport.scale > 1 || document.querySelector(".pop:not([hidden])")) return false;
+  if (!t.closest || t.closest('input, textarea, select, [contenteditable], #fpanel')) return false;
+  for (let el = t; el && el !== document.body; el = el.parentElement)
+    if (el.scrollHeight - el.clientHeight > 1 && /auto|scroll/.test(getComputedStyle(el).overflowY)) return false;
+  return true;
+}
+function pullStart(e) {
+  PULL.from = e.touches.length === 1 && pullTop() && pullable(e.target) ? { x: e.touches[0].screenX, y: e.touches[0].screenY } : null;
+  PULL.on = false;
+}
+function pullMove(e) {
+  const t = e.touches[0], from = PULL.from;
+  if (!from) return;
+  if (e.touches.length > 1) return pullEnd(e, true);  // two fingers: a zoom
+  const dx = t.screenX - from.x, dy = t.screenY - from.y;
+  if (!PULL.on) {
+    if (Math.hypot(dx, dy) < PULL_FROM) return;
+    if (dy < 1.5 * Math.abs(dx) || !pullTop()) return void (PULL.from = null);  // up, sideways, or the list moves
+    PULL.on = true;
+  }
+  PULL.part = Math.max(0, Math.min(1, (dy - PULL_FROM) / (PULL_PX - PULL_FROM)));
+  pullShown(PULL.part);
+}
+function pullEnd(e, off = e.type === "touchcancel") {
+  if (PULL.on) !off && PULL.part >= 1 ? refreshPage() : pullShown(PULL.part, "back");
+  PULL.from = null;
+  PULL.on = false;
+}
+if (IOS_APP) {
+  document.addEventListener("touchstart", pullStart, { passive: true });
+  document.addEventListener("touchmove", pullMove, { passive: true });
+  for (const ev of ["touchend", "touchcancel"]) document.addEventListener(ev, e => pullEnd(e), { passive: true });
+}
+
 // ---- detail ----
 const CLOSE_X = icon("x", 22, ' stroke-width="2.2"');
 // The top of whatever the sheet shows: the way back to what it was opened from, if it was, and ✕. On a phone or a tablet
@@ -2590,7 +2667,6 @@ const sizeWords = b => {
   }
 };
 const DL = "?dl=1";  // a file link: saved as a file, not shown (see saveInApp)
-const IOS_APP = navigator.standalone === true;  // the iPad's or iPhone's home-screen app
 // What the sheet shows (view: title, series, list, lists, bookmarks or reviews; none while it's closed), of what (it: the
 // title; list: the series' titles, or the list's id), and back: where a title's details go back to, the series or the
 // list they were opened from, as far down as it was. Set as each of them opens (sheetShows), read by all that asks
@@ -3340,7 +3416,7 @@ async function showDeclined() {
   $("sgtosugg").onclick = openSuggestions;
 }
 $("suggestlink").onclick = () => openSuggestions();
-$("reloadlink").onclick = () => location.reload();
+$("reloadlink").onclick = refreshPage;
 $("tagsuggclose").onclick = () => closeDialog("tagsugg");
 $("showdeclined").onclick = showDeclined;
 $("findsugg").onclick = async () => {

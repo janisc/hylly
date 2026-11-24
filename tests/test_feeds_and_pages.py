@@ -336,6 +336,70 @@ def test_the_page_s_layers_are_named_once_in_their_order_and_a_dialog_goes_by_th
     assert "#listpick { z-index: var(--z-over-reader); }" in style and "#reader { position: fixed; inset: 0; z-index: var(--z-reader);" in style
 
 
+def test_pulling_the_list_down_at_its_start_refreshes_and_nothing_else_does():
+    """The home-screen app on an iPhone or an iPad has no reload of its own, and the menu's Refresh was the only way. One
+    finger that starts at the list's start and goes down far enough refreshes as it lets go, and the disc says how far it
+    is and then turns; taken back, taken away, sideways, up, with two fingers, part of the way down the list, in a field,
+    in a part that scrolls by itself, over a menu, a dialog or a book, zoomed in, or while one goes on, nothing happens.
+    With the library out of reach the page stays, as the app would show an error with no way back."""
+    script = """
+const set = {}, els = { pull: { hidden: true, className: "", style: { setProperty(n, v) { set[n] = v; } } }, reader: { hidden: true }, pullsaid: { textContent: "" } };
+const $ = id => els[id], DIALOGS = [], NET = { down: false }, CANT_REACH = "away", said = [], toast = t => said.push(t);
+let pop = null, reloads = 0, top = 0, unreachable = false;
+const document = { scrollingElement: { get scrollTop() { return top; } }, body: {}, querySelector: () => pop };
+globalThis.visualViewport = { scale: 1 };
+const getComputedStyle = el => ({ overflowY: el.overflowY || "visible" });
+const netCheck = async () => { NET.down = unreachable; }, location = { reload() { reloads++; } };
+/* part 1 */
+const part = (more = {}) => ({ closest: sel => more.field && sel.includes("input") ? {} : null, scrollHeight: 100, clientHeight: 100, parentElement: document.body, ...more });
+const at = (x, y) => ({ screenX: x, screenY: y });
+// a finger's way, from 300 down: the points it passes, and how it ends
+async function pulled(ways, { target = part(), end = "touchend", fingers = 1, before = () => {}, after = () => {} } = {}) {
+  before();
+  pullStart({ touches: [at(200, 300)], target });
+  for (const [dx, dy] of ways) pullMove({ touches: Array(fingers).fill(at(200 + dx, 300 + dy)) });
+  const seen = els.pull.hidden ? null : [els.pull.className, set["--part"], set["--pulled"]], was = reloads;
+  pullEnd({ type: end });
+  const how = els.pull.className;
+  await new Promise(r => setTimeout(r, 0));
+  const out = [seen, how, reloads - was];
+  PULL.going = false;
+  els.pull.hidden = true;
+  els.pull.className = "";
+  after();
+  return out;
+}
+(async () => {
+  const far = [[2, 30], [4, 90], [6, 200]], out = {};
+  out.far = await pulled(far);
+  out.little = await pulled([[0, 40], [0, 65]]);
+  out.back = await pulled([...far, [0, 20]]);
+  out.away = await pulled(far, { end: "touchcancel" });
+  for (const [name, way, how] of [["sideways", [[60, 20], [100, 200]], {}], ["up", [[0, -40], [0, 200]], {}], ["two", far, { fingers: 2 }],
+    ["still", [[0, 4], [3, 6]], {}], ["lower", far, { before() { top = 240; }, after() { top = 0; } }], ["field", far, { target: part({ field: true }) }],
+    ["scroller", far, { target: part({ parentElement: part({ scrollHeight: 900, overflowY: "auto" }) }) }], ["menu", far, { before() { pop = {}; }, after() { pop = null; } }],
+    ["dialog", far, { before() { DIALOGS.push(1); }, after() { DIALOGS.pop(); } }], ["book", far, { before() { els.reader.hidden = false; }, after() { els.reader.hidden = true; } }],
+    ["zoomed", far, { before() { visualViewport.scale = 2; }, after() { visualViewport.scale = 1; } }], ["going", far, { before() { PULL.going = true; } }]]) out[name] = await pulled(way, how);
+  out.row = await pulled(far, { target: part({ scrollHeight: 900, overflowY: "hidden" }) });  // a row that scrolls sideways alone
+  out.bounce = await pulled(far, { before() { top = -30; }, after() { top = 0; } });  // the list springing past its start
+  out.said = els.pullsaid.textContent;
+  unreachable = true;
+  out.unreachable = await pulled(far);
+  process.stdout.write(JSON.stringify([out, said, els.pullsaid.textContent, reloads]));
+})();
+"""
+    out, said, word, reloads = in_the_page(script, (r"const PULL = ", r"if \(IOS_APP\) \{"))
+    assert out["far"] == [["far", "1.000", "64.0"], "going", 1] and out["said"] == "Refreshing"
+    assert out["little"] == [["", "0.500", "32.0"], "back", 0] and out["back"][1:] == ["back", 0] and out["away"][1:] == ["back", 0]
+    assert out["two"][0] is None and out["two"][2] == 0
+    for name in ("sideways", "up", "still", "lower", "field", "scroller", "menu", "dialog", "book", "zoomed", "going"):
+        assert out[name] == [None, "", 0], name
+    assert out["row"][2] == 1 and out["bounce"][2] == 1
+    assert out["unreachable"][2] == 0 and said == ["away"] and word == "" and reloads == 3
+    page = Path(serve.__file__).with_name("catalog_page.html").read_text(encoding="utf-8")
+    assert '$("reloadlink").onclick = refreshPage;' in page and "if (IOS_APP) {\n  document.addEventListener(\"touchstart\", pullStart" in page
+
+
 def test_a_phone_s_limits_are_the_page_s_own_and_the_script_reads_them_from_there():
     """A phone held upright is up to 699 px wide and one on its side up to 499 px high: the style sheet said so, the
     script again in numbers of its own (699 px, and 500 px for the docked filters), and the sideways tiles went by

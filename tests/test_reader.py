@@ -1952,7 +1952,7 @@ said[1].action();
 out.saved = did;
 process.stdout.write(JSON.stringify(out));
 """
-    out = in_the_page(script, (r"const sizeWords = ", r"const DL = "), (r"const DL = ", r"const IOS_APP = "),
+    out = in_the_page(script, (r"const sizeWords = ", r"const DL = "), (r"const DL = ", r"// What the sheet shows"),
                       (r"const BOOK_WHOLE = ", r"const BOOK_PATIENCE = "))
     assert out["phone"] == [["azw3", [False, False, True, True, True]], ["mobi", [False, False, True, True, True]],
                             ["fb2", [False, False, True, True, True]], ["epub", [False, False, False, False, False]]]
@@ -2008,7 +2008,7 @@ tap("h:small"); out.small = step();
 tap("h:done"); out.computerTooBig = step();
 process.stdout.write(JSON.stringify(out));
 """
-    out = in_the_page(script, (r"const sizeWords = ", r"const DL = "), (r"const DL = ", r"const IOS_APP = "),
+    out = in_the_page(script, (r"const sizeWords = ", r"const DL = "), (r"const DL = ", r"// What the sheet shows"),
                       (r"const BOOK_WHOLE = ", r"const BOOK_PATIENCE = "), (r"function wireReadRow\(it\)", r"// ---- Your reading list"))
     refused = lambda id: {"changed": [], "opened": [f"details {id}"], "said": 1}  # noqa: E731
     assert out["readAgain"] == refused("h:done") and out["continued"] == refused("h:tale")

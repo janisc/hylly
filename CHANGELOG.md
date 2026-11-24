@@ -12,6 +12,9 @@ What changed in each version of Hylly, the newest first. How each part works is 
   fifth star off an upright phone.
 - The Inbox knows a book identical to one in your own folders, by its size and MD5, not only to a copy Hylly recorded, and
   leaves it out as already in the library.
+- In the iPhone's and iPad's home-screen app, pulling the list down at its start refreshes the page, as a browser's own
+  pull does: a disc at the top turns until the page is there again. *Refresh* in the Help menu shows it too, and neither
+  leaves the page while the library can't be reached.
 - Every e-book's text follows the size you choose under *Aa*. A book that sets its text in fixed sizes (in pixels, points,
   or words such as "small") had stayed as it was at every step. A step is now the same size in every book, as it goes by
   the book's main text, and there are two larger ones: nine in all.
