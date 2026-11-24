@@ -14,7 +14,7 @@ import pytest
 from hylly import catalog, cli, exits, helppage, meta, paths, plan, snapshot
 from hylly.download import Manifest
 
-from helpers import OPF, ORDERS, build_library, damage_a_mobi, data, locked_epub, make_epub, order, page_data, png, rec
+from helpers import OPF, ORDERS, build_library, damage_a_mobi, data, locked_epub, make_epub, make_pdf, order, page_data, png, rec
 from helpers import sub, with_settings
 
 
@@ -702,6 +702,40 @@ def test_any_folder_of_your_own_is_a_source_and_its_settings_say_more(tmp_path):
     catalog.build(tmp_path, log=lambda s: None)
     (rec,) = data(tmp_path)
     assert (rec["src"], rec["g"], rec["dev"], rec["k"]) == ("shelf", ["Folklore & Myth"], "either", "tech")  # as the shops' tech books
+
+
+def test_a_manual_named_by_its_folder_goes_by_its_name_whole_and_nothing_its_file_says(tmp_path):
+    """A game's name reads as a person's, so a manual named "Lantern Wolf - Reference Card" in Lantern Wolf had the game
+    for its author, and a scan's PDF gave its title (the program that made it), its author (who ran it) and its year (of
+    the scan). Named by its folder, it goes by its name, whole. Its pages and cover are its file's as ever; a manual named
+    otherwise, one in no subfolder and a book named by its author's folder go by what they say, as they did."""
+    wolf = tmp_path / "manuals" / "Lantern Wolf"
+    make_pdf(wolf / "Lantern Wolf - Reference Card.pdf", title="ACDSee PDF Image.")
+    make_pdf(wolf / "Maps" / "lantern wolf - North_Map.pdf", title="The Moon Garden")  # one folder down
+    make_pdf(wolf / "LANTERN WOLF - hint_book.pdf", title="The Moon Garden")
+    make_pdf(wolf / "handbook.pdf", title="The Lantern Wolf Handbook")
+    make_pdf(tmp_path / "manuals" / "Glass Harbor - Guide Book.pdf", title="Glass Harbor Guide")
+    make_pdf(tmp_path / "ebooks" / "Ann Writer" / "Ann Writer - The Moon Garden.pdf", title="Untitled")
+    with zipfile.ZipFile(wolf / "Lantern Wolf - posters.cbz", "w") as z:
+        z.writestr("1.png", png())
+    (tmp_path / "state").mkdir()
+    catalog.build(tmp_path, log=lambda s: None)
+    got = {PurePosixPath(unquote(r["f"][0][0])).name: r for r in data(tmp_path)}
+    said = {name: (r["t"], r.get("a"), r.get("y"), bool(r.get("sub")), bool(r.get("tf"))) for name, r in got.items()}
+    assert said == {
+        "Lantern Wolf - Reference Card.pdf": ("Lantern Wolf - Reference Card", None, None, False, False),
+        "LANTERN WOLF - hint_book.pdf": ("LANTERN WOLF - hint book", None, None, False, False),
+        "Lantern Wolf - posters.cbz": ("Lantern Wolf - posters", None, None, False, False),
+        "lantern wolf - North_Map.pdf": ("lantern wolf - North Map", None, None, False, False),
+        "handbook.pdf": ("The Lantern Wolf Handbook", ["Pat Sample"], "2019", True, False),
+        "Glass Harbor - Guide Book.pdf": ("Glass Harbor Guide", ["Pat Sample"], "2019", True, False),
+        "Ann Writer - The Moon Garden.pdf": ("The Moon Garden", ["Pat Sample"], "2019", True, True)}
+    assert all(r.get("c") for r in got.values())  # a cover each
+    with_settings('[folders.manuals]\nkind = "book"\n')  # not manuals: as any book's file
+    catalog.build(tmp_path, log=lambda s: None)
+    got = {PurePosixPath(unquote(r["f"][0][0])).stem: (r["t"], r["a"]) for r in data(tmp_path)}
+    assert got["Lantern Wolf - Reference Card"] == ("Lantern Wolf - Reference Card", ["Pat Sample"])  # a program's words are no title
+    assert got["Lantern Wolf - posters"] == ("posters", ["Lantern Wolf"]) and got["LANTERN WOLF - hint_book"] == ("The Moon Garden", ["Pat Sample"])
 
 
 def test_a_book_outside_a_subfolder_of_a_genre_folder_gets_its_genre_by_its_words_never_a_nameless_one(tmp_path):

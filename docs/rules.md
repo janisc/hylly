@@ -206,6 +206,7 @@ no more, by their CBZ still). A kind may not be named as one of `[download]`'s o
 | `itchio` | itch.io's classifications of this kind, as its survey groups them: `book`, `comic`, `tabletop`, `other`, `game` |
 | `joins_books` | a copy of it in another place is one title with a book's there, on one card in the library page (tech books, RPG books); a copy of any other kind joins only its own kind's |
 | `text_first` | its e-book opens before its pages (a PDF, a comic's) in the library page's reader (books) |
+| `folder_named` | a file of it in a subfolder of yours, named by that subfolder and what it is ("Moonwake - Reference Card.pdf" in `manuals\Moonwake`), goes by its whole name: no part of it is an author, and nothing the file says of itself is taken, as a scan's PDF says what made it and when (manuals) |
 
 What kind a shop's title is goes by the same rule at every shop (`Rules.kind_of`): a format of a kind's `layout`
 offered makes it that kind; else the words of the most particular kind found (comics before RPG books before tech

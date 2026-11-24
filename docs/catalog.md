@@ -68,6 +68,8 @@ All of these word lists are rules files you can change: [rules.md](rules.md), an
 
 ## Cleaning what files say about themselves
 - **Junk titles fall back to the file name:** "Microsoft Word - draft.doc", "Untitled-1", "cover", "test", web addresses, drive paths, and internal names such as "00 1234_FM_Intro".
+  So are a program's own words where nobody wrote a title ("Adobe Photoshop PDF", "Full page photo"), when the title is those alone.
+- **A manual named by its folder** ("Moonwake - Reference Card.pdf" in `manuals\Moonwake`) goes by its whole file name, with no author, and what its file says of itself isn't taken (`catalog.folder_named`; the kind's `folder_named` in [rules.md](rules.md)). A game's name often reads as a person's, and a scan's PDF names the program that made it, whoever ran it, and that day's year.
 - **Junk authors are dropped:** "Administrator", "Unknown", "calibre", "test". The lookup can then fill the author in.
 - **Several authors in one string** ("Ann Writer; Bob K. Author") become separate authors.
 - **A comic named "Marshal Kane - The Complete Trail Logs 006"** inside a folder whose name starts with "Marshal Kane" takes "Marshal Kane" as part of its series, not as its author. A note in brackets after the number ("(Deluxe Colour Edition)") doesn't hide the number, and a bare "Volume 8" title gets its series in front.

@@ -901,11 +901,32 @@ def folder_series_author(item: Item) -> str:
     return authors[0] if who and _stem_key(rel.stem).startswith(who) and folder.startswith(who) and folder != who else ""
 
 
+def folder_named(item: Item) -> bool:
+    """'Moonwake - Reference Card.pdf' in manuals\\Moonwake\\ (or below it): named by its folder and what it is, so the
+    name is its title, whole, for a kind whose rules say so ([kinds.X] folder_named: manuals). Its start had been taken for an
+    author where it reads as a person's, and what a scan's PDF says of itself is the program that made it."""
+    kind, rel = rules.current().kinds.get(item.kind), PurePosixPath(item.primary[0])
+    if not kind or not kind.folder_named or item.title:
+        return False
+    stem = matching.folded(rel.stem)
+    return any(stem.startswith(f"{matching.folded(folder)} - ") for folder in rel.parts[1:-1])
+
+
+SAID = ("title", "authors", "series", "number", "description", "publisher", "year", "isbn", "subjects")
+
+
+def said(item: Item) -> dict:
+    """What a title's file says of itself, as far as it's taken (SAID is what a file named by its folder doesn't give)."""
+    return {k: v for k, v in item.meta.items() if k not in SAID} if folder_named(item) else item.meta
+
+
 def titled(item: Item) -> tuple[str, str, str]:
     """(title, series, number): the shop's title, else the file's. In a folder whose files are named by their
     titles, a name like "The Lantern Keeper (Harbor Lights Book 2)" gives the series, which then leaves the title."""
-    m = item.meta
+    m = said(item)
     stem = PurePosixPath(item.primary[0]).stem
+    if folder_named(item):
+        return meta.name_words(stem), "", ""
     own = rules.current().strip_number(m.get("title", "")).strip()  # a list's number: "83.05 The Silent Orbit"
     if own and not meta.good_title(own):  # "test", "00 1234_FM_Intro", a web address: the file name says more
         own = meta.from_filename(stem)[0]
@@ -922,8 +943,9 @@ def titled(item: Item) -> tuple[str, str, str]:
 
 def title_from_file(item: Item) -> bool:
     """Whether the title is the file name's: no shop title, and the file's own is missing, unusable or the same
-    (reading a file fills a missing title from its name). A folder's named files are named by their titles."""
-    if item.title or item.named:
+    (reading a file fills a missing title from its name). A folder's named files are named by their titles, as are a
+    manual's named by its folder (folder_named)."""
+    if item.title or item.named or folder_named(item):
         return False
     r = rules.current()
     own = r.strip_number(item.meta.get("title", "")).strip()
@@ -933,7 +955,7 @@ def title_from_file(item: Item) -> bool:
 
 def authors_of(item: Item) -> list[str]:
     series = folder_series_author(item)
-    return [a for a in item.meta.get("authors") or [] if not meta.junk_author(a) and a != series]  # "Unknown": the lookup fills it
+    return [a for a in said(item).get("authors") or [] if not meta.junk_author(a) and a != series]  # "Unknown": the lookup fills it
 
 
 # What a record's text may not keep (one_line): the marks that turn text round or set its direction (the Arabic letter
@@ -960,7 +982,7 @@ def one_line(text):
 
 
 def record(item: Item, lookup: dict | None, kind_fix: str | None = None) -> dict:
-    m = item.meta
+    m = said(item)
     title, series, number = map(one_line, titled(item))
     # a title of only marks: its file's name; that too (" .epub"): a word and its id, as every card needs a title
     title = title or one_line(PurePosixPath(item.primary[0]).stem) or f"Untitled ({item.id})"

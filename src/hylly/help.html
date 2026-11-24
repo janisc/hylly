@@ -682,6 +682,7 @@ hylly itchio download --creator "Ann"    # or --title: only the items whose name
 <li><b>Copies become one card.</b> A book that is already in the library elsewhere joins that card; its details list every copy.</li>
 <li><b>Comic series:</b> files like <code>Moonwake Vol. 1.cbz</code> or <code>Ironclad Hearts 007.cbz</code> are grouped into a series automatically.</li>
 <li><b>Built in:</b> a folder called <code>comics</code> holds comics and one called <code>manuals</code> manuals, as the kinds in the rules name them (<code>folders</code> under <code>[kinds.comic]</code>); any other holds books, unless its settings say otherwise. Each title is read where its kind and its main file say, as the shops' titles are.</li>
+<li><b>Manuals:</b> one named by its folder and what it is, such as <code>Moonwake - Reference Card.pdf</code> in <code>manuals\Moonwake</code>, goes by that name, whole. No part of it is taken for an author, nor what its PDF says of itself, which in a scan is the program that made it.</li>
 </ul>
 <p><b>A folder's settings</b>, all optional, go in a section of their own in <code>{{settings}}</code> (see <code>settings.example.toml</code>):</p>
 <pre>[folders.ebooks]
@@ -812,7 +813,7 @@ hylly set format auto --search "field guide" # no choice of your own: the files 
 <li><b>Finding what's missing:</b> the library page's <i>Missing</i> filter shows how many titles lack each detail, and lists them when you pick one:
   <ul>
     <li><i>Everything</i>: nothing but the file name. The title comes from it, and there is no author and no description.</li>
-    <li><i>Title (file name)</i>: there is no shop title, and the file's own title is missing, unusable or the same as the file name's. Many of these are fine (“The Lantern Road”), others are not (“moonwake-vol-1”). Files in a folder whose settings say <code>named = true</code> are named by their titles, so they never count.</li>
+    <li><i>Title (file name)</i>: there is no shop title, and the file's own title is missing, unusable or the same as the file name's. Many of these are fine (“The Lantern Road”), others are not (“moonwake-vol-1”). Files in a folder whose settings say <code>named = true</code> are named by their titles, so they never count; nor does a manual named by its folder.</li>
     <li><i>Author</i>, <i>Description</i>, <i>Cover</i>, <i>Publisher</i>, <i>Year</i>.</li>
   </ul>
   It combines with the other filters, for example <i>Comics</i> and <i>Missing: Author</i>. Picking two (Author and Year) lists titles that lack either. A title you fix leaves the list when you save it.</li>
@@ -1058,7 +1059,7 @@ them all, and <code>hylly doctor</code> says what it is without stopping.</p>
 <li><b>Aa, the text settings</b> (books only), the same for every book in that browser, in fixed steps:
   <ul>
     <li><b>Font:</b> the book's own, Literata (made for reading on screens), Georgia, or Atkinson Hyperlegible (made by the Braille Institute for easy reading). The two free fonts come with the program.</li>
-    <li><b>Size</b> in seven steps, <b>line spacing</b> and <b>margins</b> in three each.</li>
+    <li><b>Size</b> in nine steps, <b>line spacing</b> and <b>margins</b> in three each. A step is the same size in every book, whatever size the book sets its text in: its main text comes out at the step's own, and its headings and small print keep their proportions to it.</li>
     <li><b>Page:</b> <i>Theme</i> is your theme's page, light or dark as the library is. <i>White</i>, <i>Sepia</i>, <i>Grey</i> and <i>Black</i> are for this book only, kept in this browser; <i>Back to the theme's</i> returns it, and <i>Keep it in my theme</i> makes that page your own theme's, for light mode (white, sepia) or dark (grey, black), on all your devices when you're logged in. On a dark page every text is light, whatever colours the book sets.</li>
     <li><b>Bottom line:</b> off, the chapter and where you are, or how many minutes are left in the chapter instead of its name.</li>
   </ul></li>

@@ -12,6 +12,12 @@ What changed in each version of Hylly, the newest first. How each part works is 
   fifth star off an upright phone.
 - The Inbox knows a book identical to one in your own folders, by its size and MD5, not only to a copy Hylly recorded, and
   leaves it out as already in the library.
+- Every e-book's text follows the size you choose under *Aa*. A book that sets its text in fixed sizes (in pixels, points,
+  or words such as "small") had stayed as it was at every step. A step is now the same size in every book, as it goes by
+  the book's main text, and there are two larger ones: nine in all.
+- A manual named by its folder and what it is ("Moonwake - Reference Card.pdf" in `manuals/Moonwake`) goes by that name,
+  whole: the game had been taken for its author, and what a scan's PDF says of itself for its title. A title that is only
+  a program's own words ("Adobe Photoshop PDF", "Full page photo") gives way to the file's name everywhere.
 - How long a copy or a backup has left goes by what each file costs and by its bytes, both learned as it runs: one that
   began with thousands of small files had its first notes say hundreds of hours.
 - The PDFs of a library given by a relative path (`hylly catalog --library books`) are read: each run took them for

@@ -1100,6 +1100,7 @@ def test_the_kinds_are_one_table_and_each_says_where_it_is_read():
     assert plan.device_for("tech", "epub", 1)[1] == "tech book: fine on an e-reader, better on a tablet for code and diagrams"
     assert [k.name for k in r.kinds.values() if k.joins_books] == ["tech", "rpg"]  # their copies join a book's card
     assert [k.name for k in r.kinds.values() if k.text_first] == ["book"]  # its e-book opens first, before its PDF
+    assert [k.name for k in r.kinds.values() if k.folder_named] == ["manual"]  # one named by its folder goes by its name
     assert plan.device_for("tech", "epub", 1)[0] == "either" and settings.formats_for("comic") == (settings.get("download")["tablet"], False)
     mine('[kinds.tech]\ndevice = "tablet"\n[kinds.comic]\ndevice = "either"\n')  # where tablet_kinds = ["rpg", "tech"] was
     rules.reset()

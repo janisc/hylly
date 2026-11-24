@@ -17,7 +17,10 @@ dots_as_spaces = true
 # titles: words such a title starts with, case and accents not counting; title_extensions: an authoring program's
 # file name in it ("ch01.indd").
 titles = ["untitled", "microsoft word", "title", "unknown"]
-title_patterns = ['^document\d*\b', '^test$', '^cover(?:\s*[-:.]|$)', '\.pm\d\b']
+# title_patterns: the same as patterns; the last, a program's own words where nobody wrote a title ("Adobe Photoshop
+# PDF", "Full page photo"), and those alone, as a book about the program has more of them.
+title_patterns = ['^document\d*\b', '^test$', '^cover(?:\s*[-:.]|$)', '\.pm\d\b',
+                  '^(?:adobe (?:photoshop|illustrator|indesign)(?: pdf)?|acdsee pdf image|full page (?:photo|fax)(?: print)?|(?:microsoft )?powerpoint presentation|layout \d+|page \d+)\W*$']
 title_extensions = ["doc", "docx", "indd", "indb", "qxd", "qxp", "pdf", "rtf", "dvi", "psd", "tex", "p65", "wpd", "odt",
                     "eps", "htm", "html", "ppt", "pptx", "jpg", "jpeg", "png", "tif", "tiff", "xls", "txt"]
 # An author in a file's own details that is no person: words such a name starts with.

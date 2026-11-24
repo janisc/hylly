@@ -615,15 +615,20 @@ def looks_like_name(s: str, a_to_z: bool = False) -> bool:
             and not ({w.lower() for w in words} & r.not_name_words))
 
 
-def from_filename(stem: str) -> tuple[str, list[str]]:
-    """(title, authors) from a file's name, by [filename] in names.toml."""
+def name_words(stem: str) -> str:
+    """A file's name as words, whole, without what [filename] in names.toml takes out."""
     r = rules.current()
     s = r.strip_written.sub("", stem) if r.strip_written else stem  # a strip item with a _, as written: "_retail"
     s = re.sub(r"[_]+", " ", s)
     if r.strip:
         s = r.strip.sub("", s)
     s = r.strip_number(s)  # a list's number, where a rules file of yours has one: "53.01 The Silent Orbit - Ann Writer"
-    s = re.sub(r"\s+", " ", s).strip(" -.")
+    return re.sub(r"\s+", " ", s).strip(" -.")
+
+
+def from_filename(stem: str) -> tuple[str, list[str]]:
+    """(title, authors) from a file's name, by [filename] in names.toml."""
+    r, s = rules.current(), name_words(stem)
     bracket = re.match(r"^\[([^\]]+)\]\s*(.+)$", s)
     if bracket and looks_like_name(bracket[1]):
         return bracket[2].strip(), [bracket[1].strip()]

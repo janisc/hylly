@@ -611,13 +611,101 @@ let styles = null;
     RD.view = { renderer: r };
     try { await bookStyle(); out[name] = { fit: RD.fit, paper: $("rbook").style.background }; } catch (e) { out[name] = String(e); }
   }
-  out.styled = !!styles && styles.includes("font-size: 118%");
+  out.styled = !!styles && styles.includes("font-size: calc(118% * var(--hylly-text, 1))");
   process.stdout.write(JSON.stringify(out));
 })();
 """
     out = in_the_page(script, (r"const SIZES = ", r"// What the book engine asks"), (r"async function bookStyle\(\)", r"new ResizeObserver"))
     assert out["fixed"] == {"fit": "own", "paper": "#fbfaf6"}
     assert out["flowing"]["paper"] == "#fbfaf6" and out["styled"]
+
+
+def test_a_books_fixed_text_sizes_follow_the_step_and_the_main_text_comes_out_at_its_size():
+    """A step is a size of the pages' root. A book that set its text in px, pt or a word ("small") stayed as it was at
+    every step: 13 px on an iPad, whatever was chosen. Those become rem, in its rules (an @import's and a @media's too),
+    its tags' own styles and <font size>, but not in a drawing. And the size most of the text has is taken for the main
+    text's, and the root goes by it, so a step is the same size in every book: the characters are counted as the parts
+    come, a part once and no further than it takes, and too few say nothing."""
+    script = """
+const RD = {}, NodeFilter = { SHOW_TEXT: 4 };
+/* part 1 */
+/* part 2 */
+const out = {};
+out.rem = Object.fromEntries(["13px", "10pt", "1pc", "0.5in", "2.54cm", "25.4mm", "101.6q", "small", "Medium", "xxx-large", ".5px",
+  "1em", "90%", "1.2rem", "larger", "normal", "1.4", "inherit", "calc(1em + 2px)", "", "constructor"].map(v => [v, inRem(v)]));
+// a style as a browser's: its properties and which are !important
+const style = props => ({ props, important: new Set(), getPropertyValue(n) { return this.props[n] || ""; }, getPropertyPriority(n) { return this.important.has(n) ? "important" : ""; },
+  setProperty(n, v, p) { this.props[n] = v; if (p) this.important.add(n); }, get fontSize() { return this.props["font-size"] || ""; }, set fontSize(v) { this.props["font-size"] = v; } });
+const rule = props => ({ style: style(props) });
+const strong = rule({ "font-size": "small" });
+strong.style.important.add("font-size");
+const inSvg = { closest: sel => sel === "svg" ? {} : null }, plain = { closest: () => null };
+const sheets = [
+  { ownerNode: plain, cssRules: [rule({ "font-size": "13px", "line-height": "20px" }), strong, rule({ color: "red" }), { cssRules: [rule({ "font-size": "12pt" })] },
+    { styleSheet: { cssRules: [rule({ "line-height": "16px" })] } }, rule({ "font-size": "1.5em" })] },
+  { ownerNode: inSvg, cssRules: [rule({ "font-size": "20px" })] },
+  { ownerNode: plain, get cssRules() { throw new Error("SecurityError"); } } ];
+const tag = (props, where = null, size = "") => ({ style: style(props), closest: () => where, getAttribute: () => size });
+const tags = [tag({ "font-size": "11px" }), tag({ "font-size": "24px" }, {})], fonts = [tag({}, null, "2"), tag({}, null, "+1"), tag({}, null, "-1"), tag({}, null, "99"), tag({ "font-size": "2em" }, null, "7"), tag({}, null, "big")];
+sizesInRem({ styleSheets: sheets, querySelectorAll: sel => sel.startsWith("font") ? fonts : tags });
+const rules = sheets[0].cssRules;
+out.rules = [rules[0].style.props, rules[1].style.props, [...rules[1].style.important], rules[2].style.props, rules[3].cssRules[0].style.props, rules[4].styleSheet.cssRules[0].style.props, rules[5].style.props];
+out.svg = [sheets[1].cssRules[0].style.props, tags[1].style.props];
+out.tags = tags[0].style.props;
+out.fonts = fonts.map(f => f.style.fontSize);
+out.main = [mainSize(new Map()), mainSize(new Map([[.7, 499]])), mainSize(new Map([[.7, 500]])), mainSize(new Map([[.7, 900], [1, 4000], [1.5, 800]]))];
+// a part of a book: its texts, each with its size on a root of 20 px, and whether it is code
+const part = texts => {
+  const nodes = texts.map(([data, size, code]) => ({ data, parentElement: { size, closest: () => code ? {} : null } }));
+  const root = { style: { set: {}, setProperty(n, v) { this.set[n] = v; } }, size: 20 };
+  const frame = { style: { display: "none" } };
+  const doc = { styleSheets: [], querySelectorAll: () => [], body: {}, documentElement: root, createTreeWalker: () => { let i = 0; return { nextNode: () => nodes[i++] || null }; },
+    defaultView: { frameElement: frame, getComputedStyle: el => { if (frame.style.display === "none") throw new Error("hidden"); return { fontSize: `${el.size}px` }; } } };
+  return { doc, root, frame };
+};
+const read = (...parts) => {
+  RD.text = { scale: 1, seen: 0, sizes: new Map(), parts: new Set() };
+  RD.view = { isFixedLayout: false };
+  return parts.map(([n, p]) => { textSize(p.doc, n); return [p.root.style.set["--hylly-text"], p.frame.style.display]; });
+};
+const words = n => "x".repeat(n);
+out.small = read([0, part([[words(900), 16], [words(90), 30], [words(5000), 10, true]])]);
+out.title = read([0, part([[words(200), 40]])], [1, part([[words(4000), 25]])]);
+out.print = read([0, part([[words(3000), 14]])], [0, part([[words(3000), 14]])], [1, part([[words(6000), 20]])], [2, part([[words(400), 14]])]);
+out.seen = (read([0, part(Array.from({ length: 50 }, () => [words(1000), 20]))]), RD.text.seen);
+out.settled = (read(...[0, 1, 2, 3, 4, 5, 6].map(n => [n, part(Array.from({ length: 12 }, () => [words(1000), 20]))])), [RD.text.seen, RD.text.parts.size]);
+out.held = read([0, part([[words(900), 4]])], [1, part([[words(90000), 80]])]);
+RD.view = { isFixedLayout: true };
+const fixed = part([[words(900), 16]]);
+textSize(fixed.doc, 9);
+out.fixed = fixed.root.style.set;
+process.stdout.write(JSON.stringify(out));
+"""
+    out = in_the_page(script, (r"const SIZE_WORDS = ", r"// Books set their main text"), (r"const TEXT_LEAST = ", r"// A book's pages reach"))
+    assert out["rem"] == {"13px": "0.8125rem", "10pt": "0.8333rem", "1pc": "1rem", "0.5in": "3rem", "2.54cm": "6rem", "25.4mm": "6rem",
+                          "101.6q": "6rem", "small": "0.8125rem", "Medium": "1rem", "xxx-large": "3rem", ".5px": "0.0313rem",
+                          "1em": "", "90%": "", "1.2rem": "", "larger": "", "normal": "", "1.4": "", "inherit": "", "calc(1em + 2px)": "",
+                          "": "", "constructor": ""}
+    assert out["rules"] == [{"font-size": "0.8125rem", "line-height": "1.25rem"}, {"font-size": "0.8125rem"}, ["font-size"], {"color": "red"},
+                            {"font-size": "1rem"}, {"line-height": "1rem"}, {"font-size": "1.5em"}]
+    assert out["svg"] == [{"font-size": "20px"}, {"font-size": "24px"}] and out["tags"] == {"font-size": "0.6875rem"}
+    assert out["fonts"] == ["0.8125rem", "1.125rem", "0.8125rem", "3rem", "2em", ""]  # 7 the largest; its own style wins; "big" is none
+    assert out["main"] == [0, 0, 0.7, 1]
+    assert out["small"] == [["1.250", "none"]]  # 16 of 20; code and the few larger words don't count; the frame hidden again
+    assert out["title"] == [["1.000", "none"], ["0.800", "none"]]  # a title page says nothing
+    assert [scale for scale, _ in out["print"]] == ["1.429", "1.429", "1.000", "1.000"]  # small print, counted once, then the story
+    assert out["seen"] == 12000 and out["settled"] == [60000, 5]
+    assert [scale for scale, _ in out["held"]] == ["2.000", "0.500"]  # never more than twice, nor less than half
+    assert out["fixed"] == {}
+
+
+def test_the_steps_of_a_books_text_only_grow_and_the_ones_kept_in_a_browser_stay_what_they_were():
+    """A browser keeps the step by its place in SIZES, so a new one goes at the end."""
+    page = Path(serve.__file__).with_name("catalog_page.html").read_text(encoding="utf-8")
+    sizes = json.loads(re.search(r"^const SIZES = (\[[^\]]*\])", page, re.M)[1])
+    assert sizes[:7] == [85, 95, 106, 118, 132, 148, 166] and sizes == sorted(sizes) and len(sizes) == 9
+    help_page = Path(serve.__file__).with_name("help.html").read_text(encoding="utf-8")
+    assert "<b>Size</b> in nine steps" in help_page
 
 
 def test_space_on_a_focused_button_presses_it_and_a_panels_keys_stay_in_the_panel():

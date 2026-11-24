@@ -6207,7 +6207,7 @@ async function openReader(it, inPlace = false, goal = null) {  // goal: a bookma
   if (RD.abort) RD.abort.abort();
   RD.abort = new AbortController();
   const seq = ++RD.seq;
-  Object.assign(RD, { it, pages: 0, n: 0, book: asBook(file), toc: [], place: null, aspect: {}, placeMark: undefined, openedAt: NaN, storyEnd: null, askedDone: false, jumped: false, landing: null, pageSaid: null, loader: null, noteAction: null, goal, visiting: !!goal, from: null, lines: new Set(), list: listPlay || (SHEET.it === it && SHEET.back && SHEET.back.view === "list" ? SHEET.back.list : null) });
+  Object.assign(RD, { it, pages: 0, n: 0, book: asBook(file), text: { scale: 1, seen: 0, sizes: new Map(), parts: new Set() }, toc: [], place: null, aspect: {}, placeMark: undefined, openedAt: NaN, storyEnd: null, askedDone: false, jumped: false, landing: null, pageSaid: null, loader: null, noteAction: null, goal, visiting: !!goal, from: null, lines: new Set(), list: listPlay || (SHEET.it === it && SHEET.back && SHEET.back.view === "list" ? SHEET.back.list : null) });
   listPlay = null;
   $("rtitle").textContent = it.t;
   $("rsub").textContent = (it.a || []).join(", ") || file[1].toUpperCase();
@@ -7349,7 +7349,7 @@ function pageColours() {
   return p === "theme" ? themePage() : [...PAPERS[p], p === "grey" || p === "black"];
 }
 // The text settings (Aa), the same for every book in this browser; each in fixed steps
-const SIZES = [85, 95, 106, 118, 132, 148, 166], SPACINGS = [1.35, 1.55, 1.8];
+const SIZES = [85, 95, 106, 118, 132, 148, 166, 186, 208], SPACINGS = [1.35, 1.55, 1.8];  // kept by their place here: new ones go last
 const MARGINS = [["4%", "780px"], ["6%", "660px"], ["10%", "560px"]];  // the space at a page's sides, the longest line
 const FONTS = { literata: "Literata, Georgia, serif", georgia: "Georgia, 'Times New Roman', serif", atkinson: "'Atkinson Hyperlegible', system-ui, sans-serif" };
 const BS = Object.assign({ font: "book", size: 3, spacing: 1, margins: 1, line: "page", two: "on", tiles: "pictures", turn: "slide" },
@@ -7798,7 +7798,7 @@ async function openBook(it, [path, ext, size], seq, signal) {  // seq and signal
     RD.view = view;
     view.addEventListener("create-overlay", e => drawBookmarks(e.detail.index));  // a part of the book laid out
     view.addEventListener("draw-annotation", e => e.detail.draw(RD.overlay.Overlayer.underline, { color: BOOKMARK_LINE, width: 2, writingMode: RD.upright ? "vertical-rl" : "" }));
-    view.addEventListener("load", e => { PART_OF.set(e.detail.doc, e.detail.index); bookDoc(e.detail.doc); bookAhead(e.detail.index); });
+    view.addEventListener("load", e => { PART_OF.set(e.detail.doc, e.detail.index); textSize(e.detail.doc, e.detail.index); bookDoc(e.detail.doc); bookAhead(e.detail.index); });
     view.addEventListener("external-link", bookLinkOut);  // a link to another site: the reader's to open, not foliate's
     view.addEventListener("relocate", e => {
       if (RD.liftPlace) RD.liftPlace.place = e.detail;
@@ -7864,7 +7864,7 @@ async function bookStyle() {  // the text settings, into the book's pages
   $("rline").hidden = BS.line === "off";
   // A fixed-layout book's pages are pictures of their own, drawn as the book has them: foliate's renderer for them takes no styles
   if (r.setStyles) r.setStyles(`@namespace epub "http://www.idpf.org/2007/ops";
-    html { color-scheme: ${dark ? "dark" : "light"}; font-size: ${SIZES[BS.size] || 118}%; }
+    html { color-scheme: ${dark ? "dark" : "light"}; font-size: calc(${SIZES[BS.size] || 118}% * var(--hylly-text, 1)); }
     html, body { background: ${bg} !important; color: ${ink} !important; }
     ${dark ? `body * { color: inherit !important; background-color: transparent !important; } a:link, a:visited { color: ${link} !important; }` : ""}
     ${family ? `body, body * { font-family: ${family} !important; } pre, code, kbd, samp, tt, pre *, code * { font-family: ui-monospace, Menlo, Consolas, monospace !important; }` : ""}
@@ -7874,6 +7874,74 @@ async function bookStyle() {  // the text settings, into the book's pages
     aside[epub|type~="endnote"], aside[epub|type~="footnote"], aside[epub|type~="note"], aside[epub|type~="rearnote"] { display: none; }
     ${fit.pad ? `body { box-sizing: border-box !important; padding-inline: ${fit.pad}px !important; }` : ""}
     ${FACES || ""}`);  /* the fonts last: @namespace must come first, and nothing in them can upset the rules above */
+}
+// The size of the text. A step is a size of the pages' root, and the sizes a book sets hang on it as em, % and rem do. One set as a
+// word ("small") or in px or pt doesn't, so a book set that way stayed as it was at every step, too small to read on a tablet: those,
+// and line heights in them, become rem, with the 16px of a browser's medium as 1. A drawing (SVG) keeps its own.
+const SIZE_WORDS = new Map([["xx-small", .5625], ["x-small", .625], ["small", .8125], ["medium", 1], ["large", 1.125], ["x-large", 1.5], ["xx-large", 2], ["xxx-large", 3]]);
+const SIZE_UNITS = new Map([["px", 1 / 16], ["pt", 1 / 12], ["pc", 1], ["in", 6], ["cm", 6 / 2.54], ["mm", 6 / 25.4], ["q", 6 / 101.6]]);
+function inRem(value) {  // "" for one that hangs on the root already, or on nothing
+  const v = String(value || "").trim().toLowerCase(), at = /^(\d*\.?\d+)(px|pt|pc|in|cm|mm|q)$/.exec(v);
+  const n = at ? at[1] * SIZE_UNITS.get(at[2]) : SIZE_WORDS.get(v);
+  return n === undefined ? "" : `${+n.toFixed(4)}rem`;
+}
+function sizesInRem(doc) {
+  const fix = style => {
+    for (const name of ["font-size", "line-height"]) {
+      const v = inRem(style.getPropertyValue(name));
+      if (v) style.setProperty(name, v, style.getPropertyPriority(name));
+    }
+  };
+  const rules = sheet => {
+    let all = [];
+    try { all = sheet.cssRules || []; } catch { }  // one from elsewhere: not ours to read
+    for (const r of all) {
+      if (r.style) fix(r.style);
+      if (r.styleSheet) rules(r.styleSheet);  // @import
+      if (r.cssRules) rules(r);  // @media and the like
+    }
+  };
+  for (const sheet of doc.styleSheets) if (!sheet.ownerNode || !sheet.ownerNode.closest("svg")) rules(sheet);
+  for (const el of doc.querySelectorAll('[style*="font"], [style*="line-height"]')) if (!el.closest("svg")) fix(el.style);
+  for (const el of doc.querySelectorAll("font[size]")) {  // 1 to 7, or so much more or less than 3
+    const at = /^\s*([+-]?)(\d+)/.exec(el.getAttribute("size")), n = at && (at[1] ? 3 + Number(at[1] + at[2]) : +at[2]);
+    if (at && !el.style.fontSize) el.style.fontSize = `${[...SIZE_WORDS.values()][Math.min(7, Math.max(1, n))]}rem`;
+  }
+}
+// Books set their main text at anything from three quarters of the root's size to one and a half, so a step meant another size in
+// each. The size most of a book's text has, by its characters, counted as its parts are laid out, is taken for its main text's, and
+// the root's size goes by it (--hylly-text), so the main text comes out at the step's own. Code, and raised or lowered characters, don't count.
+const TEXT_LEAST = 500, TEXT_PART = 12000, TEXT_ENOUGH = 60000;  // characters: before it's trusted, the most one part counts for, and when it's settled
+function mainSize(sizes) {  // sizes: a size, as a share of the root's -> its characters. 0: too few to say
+  let main = 0, most = TEXT_LEAST - 1;
+  for (const [size, n] of sizes) if (n > most) [main, most] = [size, n];
+  return main;
+}
+function textSize(doc, part) {  // a part of the book, before it's laid out
+  if (RD.view.isFixedLayout) return;  // its pages are drawn as the book has them
+  sizesInRem(doc);
+  const t = RD.text, win = doc.defaultView, frame = win.frameElement;
+  if (!t.parts.has(part) && t.seen < TEXT_ENOUGH) {
+    t.parts.add(part);
+    const hidden = frame && frame.style.display;
+    if (frame) frame.style.display = "block";  // foliate has it hidden until it's laid out, and what isn't shown may have no sizes
+    const root = parseFloat(win.getComputedStyle(doc.documentElement).fontSize), known = new Map();
+    const walk = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
+    for (let node, n = 0; n < TEXT_PART && (node = walk.nextNode());) {
+      const long = node.data.trim().length, el = node.parentElement;
+      if (!long || !el || el.closest("pre, code, kbd, samp, tt, sup, sub, rt, rp, svg, script, style")) continue;
+      if (!known.has(el)) known.set(el, Math.round(1000 * parseFloat(win.getComputedStyle(el).fontSize) / root) / 1000);
+      const size = known.get(el);
+      if (!(size > 0)) continue;
+      t.sizes.set(size, (t.sizes.get(size) || 0) + long);
+      n += long;
+      t.seen += long;
+    }
+    if (frame) frame.style.display = hidden;
+    const main = mainSize(t.sizes);
+    if (main) t.scale = Math.min(2, Math.max(.5, 1 / main));
+  }
+  doc.documentElement.style.setProperty("--hylly-text", t.scale.toFixed(3));
 }
 // A book's pages reach the screen's edges, as a comic's do: each page holds its own margins, so the next one comes in
 // from the edge, twice the margin away. foliate is told to leave no margins of its own, as it would cut the pages off

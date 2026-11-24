@@ -15,6 +15,9 @@
 #   folders       your own folders of that name are of this kind, unless the settings say otherwise
 #   joins_books   a copy of it in another place is one title with a book's there, on one card in the library page
 #   text_first    its e-book opens before its pages (a PDF, a comic's), in the library page's reader
+#   folder_named  a file of it named by its folder and what it is ("Moonwake - Reference Card" in Moonwake) goes by its
+#                 whole name: no part of it is an author, and nothing the file says of itself is taken (a scan's PDF
+#                 says what made it, and when)
 #
 # What kind a shop's title is goes by the same rules at every shop: a title offered in a format of a kind's layout
 # (formats.toml: CBZ, CBR) is that kind. Otherwise words in the name of a bundle it came in, or the name of who made
@@ -99,6 +102,7 @@ label = "Manual"
 plural = "Manuals"
 device = "ereader"
 folders = ["manuals"]
+folder_named = true
 
 [labels]
 # A shop's file whose name (such as "PDF (Supplement)") has one of these words is an extra, not another copy of
